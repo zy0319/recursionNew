@@ -1,0 +1,33 @@
+2019-10-23 09:23:44.658  INFO 21675 --- [restartedMain] com.zy.recursion.RecursionApplication    : Starting RecursionApplication on zhangyideMacBook-Pro.local with PID 21675 (/Users/zhangyi/IdeaProjects/recursion/target/classes started by zhangyi in /Users/zhangyi/IdeaProjects/recursion)
+2019-10-23 09:23:44.665  INFO 21675 --- [restartedMain] com.zy.recursion.RecursionApplication    : No active profile set, falling back to default profiles: default
+2019-10-23 09:23:44.703  INFO 21675 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2019-10-23 09:23:44.704  INFO 21675 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2019-10-23 09:23:45.390  WARN 21675 --- [restartedMain] t.m.s.mapper.ClassPathMapperScanner      : No MyBatis mapper was found in '[com.zy.recursion]' package. Please check your configuration.
+2019-10-23 09:23:45.399  WARN 21675 --- [restartedMain] o.m.s.mapper.ClassPathMapperScanner      : No MyBatis mapper was found in '[com.zy.recursion]' package. Please check your configuration.
+2019-10-23 09:23:45.836  INFO 21675 --- [restartedMain] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$1b9ff332] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2019-10-23 09:23:46.210  INFO 21675 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8686 (http)
+2019-10-23 09:23:46.233  INFO 21675 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2019-10-23 09:23:46.233  INFO 21675 --- [restartedMain] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.21]
+2019-10-23 09:23:46.320  INFO 21675 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2019-10-23 09:23:46.320 DEBUG 21675 --- [restartedMain] o.s.web.context.ContextLoader            : Published root WebApplicationContext as ServletContext attribute with name [org.springframework.web.context.WebApplicationContext.ROOT]
+2019-10-23 09:23:46.320  INFO 21675 --- [restartedMain] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 1616 ms
+2019-10-23 09:23:46.530  INFO 21675 --- [restartedMain] c.a.d.s.b.a.DruidDataSourceAutoConfigure : Init DruidDataSource
+2019-10-23 09:23:46.910  INFO 21675 --- [restartedMain] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
+2019-10-23 09:23:47.397 DEBUG 21675 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : 35 mappings in 'requestMappingHandlerMapping'
+2019-10-23 09:23:47.444 DEBUG 21675 --- [restartedMain] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2019-10-23 09:23:47.474 DEBUG 21675 --- [restartedMain] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 0 @ExceptionHandler, 1 ResponseBodyAdvice
+2019-10-23 09:23:47.482  INFO 21675 --- [restartedMain] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService
+2019-10-23 09:23:47.485  INFO 21675 --- [restartedMain] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 'taskExecutor'
+2019-10-23 09:23:47.793  WARN 21675 --- [restartedMain] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:templates/ (please add some templates or check your Thymeleaf configuration)
+2019-10-23 09:23:47.796  WARN 21675 --- [restartedMain] org.thymeleaf.templatemode.TemplateMode  : [THYMELEAF][restartedMain] Template Mode 'LEGACYHTML5' is deprecated. Using Template Mode 'HTML' instead.
+2019-10-23 09:23:47.868  INFO 21675 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2019-10-23 09:23:47.875  INFO 21675 --- [restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoint(s) beneath base path '/actuator'
+2019-10-23 09:23:47.966  INFO 21675 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8686 (http) with context path ''
+2019-10-23 09:23:47.969  INFO 21675 --- [restartedMain] com.zy.recursion.RecursionApplication    : Started RecursionApplication in 18.726 seconds (JVM running for 24.672)
+2019-10-23 09:23:48.484  INFO 21675 --- [RMI TCP Connection(4)-172.171.1.70] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2019-10-23 09:23:48.485  INFO 21675 --- [RMI TCP Connection(4)-172.171.1.70] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2019-10-23 09:23:48.485 DEBUG 21675 --- [RMI TCP Connection(4)-172.171.1.70] o.s.web.servlet.DispatcherServlet        : Detected StandardServletMultipartResolver
+2019-10-23 09:23:48.493 DEBUG 21675 --- [RMI TCP Connection(4)-172.171.1.70] o.s.web.servlet.DispatcherServlet        : enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2019-10-23 09:23:48.494  INFO 21675 --- [RMI TCP Connection(4)-172.171.1.70] o.s.web.servlet.DispatcherServlet        : Completed initialization in 9 ms
+2019-10-23 09:23:57.411  INFO 21675 --- [Thread-47] o.s.s.concurrent.ThreadPoolTaskExecutor  : Shutting down ExecutorService 'taskExecutor'
+2019-10-23 09:23:57.424  INFO 21675 --- [Thread-47] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} closed

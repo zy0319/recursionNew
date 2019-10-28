@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.recursion.dao.deviceDao">
+    <insert id="addDevice">
+        INSERT INTO device (
+        nodeName,
+        deviceType,
+        deviceName,
+        deviceIp,
+        deviceLocation,
+        deviceUserName,
+        devicePwd
+        )
+        VALUES
+          (
+            #{nodeName},
+            #{deviceType},
+            #{deviceName},
+            #{deviceIp},
+            #{deviceLocation},
+            #{deviceUserName},
+            #{devicePwd}
+          )
+    </insert>
+
+    <select id="selectAll" resultType="com.zy.recursion.entity.device">
+        SELECT
+          a.nodeName,
+          a.deviceType,
+          a.deviceName,
+          a.deviceIp,
+          a.deviceLocation,
+          a.deviceId
+        FROM
+          device AS a
+    </select>
+
+    <select id="selectAll1" resultType="com.zy.recursion.entity.device">
+        SELECT
+          a.nodeName,
+          a.deviceIp,
+          a.deviceUserName,
+          a.devicePwd,
+          a.deviceType
+        FROM
+          device AS a
+    </select>
+
+    <select id="selectIpByNodeName" resultType="com.zy.recursion.entity.device">
+        SELECT
+          a.deviceIp,
+          a.deviceUserName,
+          a.devicePwd,
+          a.deviceType
+        FROM
+          device AS a
+        WHERE
+          nodeName = #{nodeName}
+    </select>
+
+    <select id="selectDeviceByNodeName" resultType="com.zy.recursion.entity.device">
+        SELECT
+          a.deviceIp,
+          a.nodeName,
+          a.deviceType,
+          a.deviceLocation,
+          a.deviceId,
+          a.deviceName,
+          a.deviceUserName,
+          a.devicePwd
+        FROM
+          device AS a
+        WHERE
+          nodeName = #{nodeName}
+    </select>
+
+
+    <delete id="deleteDevice">
+        DELETE FROM device WHERE deviceIp = #{deviceIp}
+    </delete>
+
+    <delete id="deleteDeviceByNodename">
+        DELETE FROM device WHERE nodeName = #{nodeName}
+    </delete>
+
+    <update id="updateDevice" parameterType="com.zy.recursion.entity.device">
+        update device
+        <set>
+            <if test="nodeName!=null">
+                nodeName = #{nodeName},
+            </if>
+            <if test="deviceName!=null">
+                deviceName = #{deviceName},
+            </if>
+            <if test="deviceLocation!=null">
+                deviceLocation = #{deviceLocation},
+            </if>
+            <if test="deviceIp!=null">
+                deviceIp = #{deviceIp},
+            </if>
+            <if test="deviceType!=null">
+                deviceType = #{deviceType},
+            </if>
+        </set>
+        where deviceId = #{deviceId}
+    </update>
+
+    <select id="selectDevice">
+        SELECT COUNT(*)
+        FROM
+          device
+        WHERE device.nodeName = #{nodeName}
+    </select>
+
+    <select id="selectByIp" resultType="com.zy.recursion.entity.device">
+        SELECT
+          *
+        FROM
+          device AS a
+        WHERE
+          a.deviceIp = #{deviceIp}
+    </select>
+</mapper>

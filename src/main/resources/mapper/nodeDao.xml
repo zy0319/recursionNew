@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.recursion.dao.nodeDao">
+    <insert id="addNode">
+        INSERT INTO node (
+          nodeName,
+          operatorName,
+          deviceCount
+        )
+        VALUES
+          (
+            #{nodeName},
+            #{operatorName},
+            #{deviceCount}
+          )
+    </insert>
+
+    <select id="selectAll" resultType="com.zy.recursion.entity.node">
+        SELECT
+          a.nodeName,
+          a.operatorName,
+          a.deviceCount,
+          a.nodeId
+        FROM
+          node AS a
+    </select>
+
+    <delete id="deleteNode">
+        DELETE FROM node WHERE nodeName = #{nodeName}
+    </delete>
+
+    <update id="updateNode" parameterType="com.zy.recursion.entity.node">
+        update node
+        <set>
+            <if test="nodeName!=null">
+                nodeName = #{nodeName},
+            </if>
+            <if test="operatorName!=null">
+                operatorName = #{operatorName},
+            </if>
+            <if test="deviceCount!=null">
+                deviceCount = #{deviceCount},
+            </if>
+        </set>
+        where nodeId = #{nodeId}
+    </update>
+
+    <select id="selectByNodename" resultType="com.zy.recursion.entity.node">
+        SELECT
+          a.nodeName,
+          a.operatorName,
+          a.deviceCount,
+          a.nodeId
+        FROM
+          node AS a
+        WHERE
+          a.nodeName = #{nodeName}
+    </select>
+
+</mapper>

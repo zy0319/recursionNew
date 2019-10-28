@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.recursion.dao.tokenDao">
+    <insert id="addToken">
+        INSERT INTO token (
+          userName,
+          token
+        )
+        VALUES
+          (
+            #{userName},
+            #{token}
+          )
+    </insert>
+
+    <update id="updateToken" parameterType="com.zy.recursion.entity.token">
+        update token
+        <set>
+            <if test="userName!=null">
+                userName = #{userName},
+            </if>
+            <if test="token!=null">
+                token = #{token},
+            </if>
+        </set>
+        where userName = #{userName}
+    </update>
+
+
+
+</mapper>
