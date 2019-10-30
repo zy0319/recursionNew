@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.recursion.dao.handleCacheDao">
+    <insert id="addHandleCache">
+        INSERT INTO handleCache (
+        TIME1,
+        RECEIVE,
+        DROP1,
+        REPLY,
+        AVG_REP_TIME,
+        SUCCESS,
+        OTHER,
+        SUCCESS_RATE,
+        HIT_RATE,
+        RECUR,
+        AVG_RECUR_TIME,
+        RECUR_SUCCESS,
+        ALL_RECEIVE,
+        total_time,
+        HANDLE,
+        DNS,
+        OID,
+        ECODE,
+        GS1,
+        deviceIp,
+        currentTime
+        )
+        VALUES
+          (
+            #{TIME},
+            #{RECEIVE},
+            #{DROP},
+            #{REPLY},
+            #{AVG_REP_TIME},
+            #{SUCCESS},
+            #{OTHER},
+            #{SUCCESS_RATE},
+            #{HIT_RATE},
+            #{RECUR},
+            #{AVG_RECUR_TIME},
+            #{RECUR_SUCCESS},
+            #{ALL_RECEIVE},
+            #{total_time},
+            #{HANDLE},
+            #{DNS},
+            #{OID},
+            #{ECODE},
+            #{GS1},
+            #{deviceIp},
+            #{currentTime}
+          )
+    </insert>
+    <select id="selectHandleCache" resultType="com.zy.recursion.entity.handleCacheLog">
+        SELECT
+          *
+        FROM
+          handleCache
+        WHERE
+          DATE_FORMAT(currentTime, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d') AND DATE_FORMAT(currentTime, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+    </select>
+
+</mapper>

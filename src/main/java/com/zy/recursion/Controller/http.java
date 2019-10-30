@@ -7,6 +7,7 @@ import com.zy.recursion.entity.device;
 import com.zy.recursion.entity.handleCache;
 import com.zy.recursion.entity.returnMessage;
 import com.zy.recursion.service.device.deviceService;
+import com.zy.recursion.service.handleCache.handleCacheService;
 import com.zy.recursion.util.ConnectLinuxCommand;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +32,9 @@ public class http {
     @Autowired
     private deviceService deviceService;
 
+
 //    @Autowired
-//    private handleCache handleCache;
+//    private handleCacheDao handleCacheDao;
 
     @annotation.UserLoginToken
     @CrossOrigin
@@ -51,11 +53,15 @@ public class http {
         int avg_recur = 0;
         float recur_success = 0;
         float all_receive = 0;
+        int handle  = 0;
+        int dns  = 0;
+        int oid  = 0;
+        int ecode  = 0;
+        int gs1  = 0;
         String total_time = null;
         String time = null;
         int cacheDeviceCount = 0;
         for (handleCache handleCache:linuxConfig.handleCaches){
-            System.out.println("====="+handleCache.getHandleCache().getString("nodeName")+"----"+jsonObject.getString("nodeName"));
             if (handleCache.getHandleCache().getString("nodeName").equals(jsonObject.getString("nodeName"))){
                 JSONObject jsonObject1 = handleCache.getHandleCache();
                 if (jsonObject1.getString("deviceType").equals("缓存")){
@@ -74,6 +80,11 @@ public class http {
                     recur_success = recur_success+jsonObject1.getFloat("RECUR_SUCCESS");
                     all_receive = all_receive+jsonObject1.getFloat("ALL_RECEIVE");
                     total_time = jsonObject1.getString("total_time");
+                    handle = handle+jsonObject1.getInt("HANDLE");
+                    dns = dns+jsonObject1.getInt("DNS");
+                    oid = oid+jsonObject1.getInt("OID");
+                    ecode = ecode+jsonObject1.getInt("ECODE");
+                    gs1 = gs1+jsonObject1.getInt("GS1");
                 }
             }
         }
@@ -100,6 +111,11 @@ public class http {
         jsonObject2.put("RECUR", recur);
         jsonObject2.put("ALL_RECEIVE", all_receive);
         jsonObject2.put("total_time", total_time);
+        jsonObject2.put("HANDLE", handle);
+        jsonObject2.put("DNS", dns);
+        jsonObject2.put("OID", oid);
+        jsonObject2.put("ECODE", ecode);
+        jsonObject2.put("GS1", gs1);
         jsonObject2.put("nodeName", jsonObject.getString("nodeName"));
         return jsonObject2.toString();
     }

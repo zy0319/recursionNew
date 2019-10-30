@@ -253,11 +253,10 @@ public class Linux {
     public String deviceDiskUtilization(@RequestBody(required = false) String requestBody) throws IOException {
         JSONObject jsonObject1 = new JSONObject(requestBody);
         String deviceIp = jsonObject1.getString("deviceIp");
-        device device = deviceService.selectByIp1(deviceIp);
         for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-            System.out.println(linuxMessage.toString());
             if (linuxMessage.getDeviceIp().equals(deviceIp)){
-                return linuxMessage.getDiskUtilization().toString();
+                jsonObject1.put("disk_utilization",linuxMessage.getDiskUtilization().toString());
+                return jsonObject1.toString();
             }
         }
         return null;
@@ -269,10 +268,10 @@ public class Linux {
     public String deviceMemoryUtilization(@RequestBody(required = false) String requestBody) throws IOException {
         JSONObject jsonObject1 = new JSONObject(requestBody);
         String deviceIp = jsonObject1.getString("deviceIp");
-
         for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
             if (linuxMessage.getDeviceIp().equals(deviceIp)){
-                return linuxMessage.getMemoryUtilization().toString();
+                jsonObject1.put("memory_utilization",linuxMessage.getMemoryUtilization().toString());
+                return jsonObject1.toString();
             }
         }
         return null;
@@ -286,7 +285,8 @@ public class Linux {
         String deviceIp = jsonObject1.getString("deviceIp");
         for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
             if (linuxMessage.getDeviceIp().equals(deviceIp)){
-                return linuxMessage.getCpuUtilization().toString();
+                jsonObject1.put("cpu_utilization",linuxMessage.getCpuUtilization().toString());
+                return jsonObject1.toString();
             }
         }
         return null;

@@ -23,21 +23,21 @@
 //    @Autowired
 //    com.zy.recursion.util.ConnectLinuxCommand connectLinuxCommand;
 //
-//    //    @Async("taskExecutor")
-////    public  Boolean login(String ip, String name, String password) throws IOException {
-////        boolean flag = false;
-////        int connectTimes = 1;
-////        long waitTime = System.currentTimeMillis() + 2000;
-////        do {
-////            try {
-////                conn = new Connection(ip);
-////                conn.connect();// 连
-////                break;
-////            } catch (ConnectException e) {
-////                return false;
-////            } catch (IOException e) {
-////                connectTimes++;
-////                return false;
+//        @Async("taskExecutor")
+//    public  Boolean login(String ip, String name, String password) throws IOException {
+//        boolean flag = false;
+//        int connectTimes = 1;
+//        long waitTime = System.currentTimeMillis() + 2000;
+//        do {
+//            try {
+//                conn = new Connection(ip);
+//                conn.connect();// 连
+//                break;
+//            } catch (ConnectException e) {
+//                return false;
+//            } catch (IOException e) {
+//                connectTimes++;
+//                return false;
 //////                e.printStackTrace();
 ////            }
 ////        } while (System.currentTimeMillis() < waitTime && 20 <= connectTimes);

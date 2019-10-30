@@ -12,6 +12,8 @@ public class address {
     private String address;
     private String networkCard;
     private int bandwidthSet;
+    private String javaRefresh;
+    private String javaRefresh1;
 
     public int getBandwidthSet() {
         return bandwidthSet;
@@ -35,5 +37,21 @@ public class address {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getJavaRefresh() {
+        return javaRefresh;
+    }
+
+    public void setJavaRefresh(String javaRefresh) {
+        this.javaRefresh = javaRefresh;
+    }
+
+    public String getJavaRefresh1() {
+        return javaRefresh1;
+    }
+
+    public void setJavaRefresh1(String javaRefresh1) {
+        this.javaRefresh1 = javaRefresh1;
     }
 }

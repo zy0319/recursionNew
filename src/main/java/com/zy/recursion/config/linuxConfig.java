@@ -4,10 +4,12 @@ import com.zy.recursion.entity.address;
 import com.zy.recursion.entity.device;
 import com.zy.recursion.entity.handleCache;
 import com.zy.recursion.entity.linuxMessage;
+import com.zy.recursion.service.handleCache.handleCacheService;
 import com.zy.recursion.util.ConnectLinuxCommand;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -20,8 +22,8 @@ import java.util.List;
 @EnableScheduling   // 2.开启定时任务
 public class linuxConfig  {
 
-    public static linuxMessage[] linuxMessages = new linuxMessage[5];
-    public static handleCache[] handleCaches = new handleCache[]{};
+    public static linuxMessage[] linuxMessages;
+    public static handleCache[] handleCaches;
 
     @Autowired
     private com.zy.recursion.service.device.deviceService deviceService;
@@ -29,10 +31,15 @@ public class linuxConfig  {
     @Autowired
     private com.zy.recursion.entity.address address;
 
+
+    @Autowired
+    private com.zy.recursion.service.handleCache.handleCacheService handleCacheService;
     @PostConstruct
     public void init() throws IOException {
         //系统启动中。。。加载codeMap
         List<device> list = deviceService.selectAll1();
+        handleCaches = new handleCache[list.size()];
+        linuxMessages = new linuxMessage[list.size()];
         ConnectLinuxCommand.login1(list);
     }
 
@@ -74,6 +81,13 @@ public class linuxConfig  {
         }
     }
 
+    public void addHandleCache() throws IOException {
+        //系统启动中。。。加载codeMap
+        for (handleCache handleCache : handleCaches) {
+            handleCacheService.addHandleCache(handleCache);
+        }
+    }
+
 //
 //    @PreDestroy
 //    public void destroy() {
@@ -81,12 +95,36 @@ public class linuxConfig  {
 //    }
 
 //    @Scheduled(cron = "0 0 0/2 * * ?")
-    @Scheduled(cron = "0/5 * * * * ?")
+    @Scheduled(cron = "${address.javaRefresh}")
     @DependsOn
+    @Async("taskExecutor")
     public void testOne() throws IOException {
         //每2小时执行一次缓存
         LinuxMessage();
-        LinuxHandleCache();
+//        LinuxHandleCache();
+//        addHandleCache();
     }
 
+    @Scheduled(cron = "${address.javaRefresh}")
+    @DependsOn
+    @Async("taskExecutor")
+
+    public void testOne1() throws IOException {
+        //每2小时执行一次缓存
+//        LinuxMessage();
+        LinuxHandleCache();
+//        addHandleCache();
+    }
+
+
+    @Scheduled(cron = "${address.javaRefresh1}")
+    @DependsOn
+    @Async("taskExecutor")
+
+    public void testOne2() throws IOException {
+        //每2小时执行一次缓存
+//        LinuxMessage();
+//        LinuxHandleCache();
+        addHandleCache();
+    }
 }

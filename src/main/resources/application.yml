@@ -26,7 +26,8 @@ address:
   address: /home/fnii/handle_cache/log/handle_cache_stats
   networkCard: em3
   bandwidthSet: 1000
-
+  javaRefresh: "0/1 * * * * ?"
+  javaRefresh1: "0/5 * * * * ?"
 mybatis:
   type-aliases-package: com.zy.recursion.entity
   mapper-locations: classpath:mapper/*.xml
