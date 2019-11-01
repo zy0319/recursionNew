@@ -22,7 +22,7 @@ public class handleCacheLog {
     @PostMapping(value = "/handleCacheSelect",produces = {"text/html;charset=UTF-8"})
     public String cacheSelect(@RequestBody(required = false) String requesyBody) throws IOException {
         JSONObject jsonObject = new JSONObject(requesyBody);
-        return handleCacheService.selectHandleCache(jsonObject.getString("startTime"),jsonObject.getString("endTime"),jsonObject.getInt("page"),jsonObject.getInt("pageSize"));
+        return handleCacheService.selectHandleCache(jsonObject.getString("startTime"),jsonObject.getString("endTime"),jsonObject.getInt("page"),jsonObject.getInt("pageSize"),jsonObject.getString("deviceIp"));
     }
 
 

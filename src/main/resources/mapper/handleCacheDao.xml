@@ -56,7 +56,9 @@
         FROM
           handleCache
         WHERE
-          DATE_FORMAT(currentTime, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d') AND DATE_FORMAT(currentTime, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+          DATE_FORMAT(currentTime, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+          AND DATE_FORMAT(currentTime, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+          AND deviceIp = #{deviceIp}
     </select>
 
 </mapper>

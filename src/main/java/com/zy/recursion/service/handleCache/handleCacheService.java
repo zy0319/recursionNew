@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface handleCacheService {
     void addHandleCache(handleCache handleCache);
-    String selectHandleCache(String startTime, String endTime,int page,int pageSize);
+    String selectHandleCache(String startTime, String endTime,int page,int pageSize,String deviceIp);
 }

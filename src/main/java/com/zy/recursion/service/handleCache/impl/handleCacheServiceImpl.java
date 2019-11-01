@@ -3,17 +3,15 @@ package com.zy.recursion.service.handleCache.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.zy.recursion.dao.handleCacheDao;
-import com.zy.recursion.entity.cache;
 import com.zy.recursion.entity.handleCache;
 import com.zy.recursion.entity.handleCacheLog;
 import com.zy.recursion.service.handleCache.handleCacheService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+
 
 @Service
 public class handleCacheServiceImpl implements handleCacheService {
@@ -54,16 +52,21 @@ public class handleCacheServiceImpl implements handleCacheService {
 
 
     @Override
-    public String selectHandleCache(String startTime, String endTime,int page,int pageSize){
+    public String selectHandleCache(String startTime, String endTime,int page,int pageSize,String deviceIp){
 
+
+        long date = System.currentTimeMillis();
 //        List list = cacheService.selectCache(startTime,endTime);
         PageHelper.startPage(page,pageSize);
         // 设置分页查询条件
 //        Example example = new Example(cache.class);
-        PageInfo<handleCacheLog> pageInfo = new PageInfo<>(handleCacheDao.selectHandleCache(startTime,endTime));
+        PageInfo<handleCacheLog> pageInfo = new PageInfo<>(handleCacheDao.selectHandleCache(startTime,endTime,deviceIp));
         JSONObject jsonObject1 = new JSONObject();
         jsonObject1.put("data",pageInfo.getList());
         jsonObject1.put("pages",pageInfo.getPages());
+        long date1 = System.currentTimeMillis();
+        System.out.println("==========");
+        System.out.println(date1-date);
         return jsonObject1.toString();
     }
 }

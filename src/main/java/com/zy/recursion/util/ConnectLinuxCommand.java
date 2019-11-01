@@ -10,7 +10,9 @@ import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
 import ch.ethz.ssh2.StreamGobbler;
 import com.zy.recursion.entity.device;
+import com.zy.recursion.entity.ipLimit;
 import com.zy.recursion.entity.returnMessage;
+import com.zy.recursion.entity.sysRecord;
 import io.micrometer.core.instrument.util.StringEscapeUtils;
 import io.micrometer.core.instrument.util.StringUtils;
 import org.slf4j.Logger;
@@ -124,6 +126,7 @@ public class ConnectLinuxCommand {
                 for (int i = 0; i < cmd.length; i++) {
                     Session session = null;
                     session = connections[m].openSession();
+//                    session.
                     session.execCommand(cmd[i]);// 执行命令
                     result[i] = processStdout(session.getStdout(), DEFAULTCHARTSET);
                     // 如果为得到标准输出为空，说明脚本执行出错了
@@ -646,10 +649,113 @@ public class ConnectLinuxCommand {
     }
 
 
+    public static List<ipLimit> readFile(String filePath,String deviceIp) throws IOException {
+        String[] cmd = {"cat " + filePath};
+        String[] result = ConnectLinuxCommand.execute(deviceIp, cmd);
+        BufferedReader bufferedReader = new BufferedReader(new StringReader(result[0]));
+        String str =null;
+        List<ipLimit> ipLimits =new ArrayList<>();
+        while(null !=(str=bufferedReader.readLine())) {
+            if (!String.valueOf(str.charAt(0)).equals("#")){
+                ipLimit ipLimit = new ipLimit();
+                ipLimit.setStatus(0);
+                ipLimit.setDeviceIp(str.split("\\|")[0]);
+                ipLimit.setLimit(Integer.parseInt(str.split("\\|")[1]));
+                ipLimit.setNodeIp(deviceIp);
+                ipLimits.add(ipLimit);
+            }
+        }
+        bufferedReader.close();
+        return ipLimits;
+    }
+
+    public static List<sysRecord> readFile1(String filePath, String deviceIp) throws IOException {
+        String[] cmd = {"cat " + filePath};
+        String[] result = ConnectLinuxCommand.execute(deviceIp, cmd);
+        BufferedReader bufferedReader = new BufferedReader(new StringReader(result[0]));
+        String str =null;
+        List<sysRecord> sysRecords =new ArrayList<>();
+        while(null !=(str=bufferedReader.readLine())) {
+            if (!String.valueOf(str.charAt(0)).equals("#")){
+               sysRecord sysRecord = new sysRecord();
+               sysRecord.setTtl(Integer.parseInt(str.split("\\|")[2]));
+               sysRecord.setIndex(Integer.parseInt(str.split("\\|")[3]));
+               sysRecord.setType(str.split("\\|")[4]);
+               sysRecord.setHandleName(str.split("\\|")[1]);
+               sysRecord.setData(str.split("\\|")[5]);
+               sysRecord.setNodeIp(deviceIp);
+               sysRecord.setStatus(0);
+               sysRecords.add(sysRecord);
+            }
+        }
+        bufferedReader.close();
+        return sysRecords;
+    }
+
+    //清空所有文件内容
+    public static void clearStringFromFile(String filePath,String deviceIP) throws IOException {
+        String[] cmd = {"> " + filePath};
+        ConnectLinuxCommand.execute(deviceIP, cmd);
+    }
+
+    //写入文件内容
+    public static void writeStringToFile(String filePath,List<String> info,String deviceIp) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("#IP地址|限速值(-1:白名单; 0:黑名单; >=1:限速qps)\n" + "#172.171.1.79|1000");
+        for (String s : info) {
+            stringBuilder.append("\n").append(s);
+        }
+        String[] cmd = {"echo -e " + "\'"+stringBuilder+"\'"+"> "+filePath};
+        ConnectLinuxCommand.execute(deviceIp, cmd);
+    }
+
+    public static void writeStringToFile1(String filePath,List<String> info,String deviceIp) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("#IP地址|限速值(-1:白名单; 0:黑名单; >=1:限速qps)");
+        for (String s : info) {
+            stringBuilder.append("\n").append(s);
+        }
+        String[] cmd = {"echo -e " + "\'"+stringBuilder+"\'"+"> "+filePath};
+        ConnectLinuxCommand.execute(deviceIp, cmd);
+    }
+
+    public static void deleteFile(String filePath,String ipLimit,String deviceIp) throws IOException {
+        String[] cmd = {"sed -i " +"'/"+ipLimit+"/d' "+filePath};
+        System.out.println("====="+cmd[0]);
+        ConnectLinuxCommand.execute(deviceIp, cmd);
+    }
+
+    public static Stack sendSet(String filePath,String deviceIP) throws IOException {
+        String[] cmd = {"/home/fnii/handle_cache/bin/cmdsh3 127.0.0.1 15000 2 \"reload ip_limit\""};
+        String[] result = ConnectLinuxCommand.execute(deviceIP, cmd);
+        BufferedReader bufferedReader = new BufferedReader(new StringReader(result[0]));
+        String line2 = null;
+        Stack stack = new Stack();
+        while ((line2 = bufferedReader.readLine()) != null) {
+            stack.push(line2);
+        }
+        bufferedReader.close();
+        return stack;
+    }
+
+    public static Stack sendSet1(String filePath,String deviceIP) throws IOException {
+        String[] cmd = {"/home/fnii/handle_cache/bin/cmdsh3 127.0.0.1 15000 2 \"reload sys_record\""};
+        String[] result = ConnectLinuxCommand.execute(deviceIP, cmd);
+        BufferedReader bufferedReader = new BufferedReader(new StringReader(result[0]));
+        String line2 = null;
+        Stack stack = new Stack();
+        while ((line2 = bufferedReader.readLine()) != null) {
+            stack.push(line2);
+        }
+        bufferedReader.close();
+        return stack;
+    }
+
     public static void main(String[] args) throws IOException {
-//
-//        String[] cmd = new String[]{"tail -2 /home/fnii/handle_cache/log/handle_cache_stats.1"};
-//        System.out.println(ConnectLinuxCommand.execute("172.171.1.80","root","pms123handle$%^",cmd)[0]);
+//        writeStringToFile("/Users/zhangyi/Downloads/springboot源码/recursion/File/ip_limit.conf","hdsjakdnjksa");
+//        clearStringFromFile("/Users/zhangyi/Downloads/springboot源码/recursion/File/ip_limit.conf");
+//        File file=new File("/Users/zhangyi/Downloads/springboot源码/recursion/File/ip_limit.conf");
+        System.out.println("http://www.baidu.com".replace("/","\\/"));
 
     }
 }

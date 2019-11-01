@@ -8,6 +8,6 @@ import java.util.List;
 @Repository
 public interface handleCacheDao {
     void addHandleCache(handleCacheLog handleCacheLog);
-    List<handleCacheLog> selectHandleCache(String startTime, String endTime);
+    List<handleCacheLog> selectHandleCache(String startTime, String endTime,String deviceIp);
 
 }

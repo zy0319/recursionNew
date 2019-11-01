@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.recursion.dao.sysRecordDao">
+    <insert id="addSysRecord">
+        INSERT INTO sysRecord (
+        handleName,
+        `index`,
+        ttl,
+        type,
+        `data`,
+        `status`,
+        nodeIp
+        )
+        VALUES
+          (
+            #{handleName},
+            #{index},
+            #{ttl},
+            #{type},
+            #{data},
+            #{status},
+            #{nodeIp}
+          )
+    </insert>
+
+    <select id="selectSysRecord" resultType="com.zy.recursion.entity.sysRecord">
+        SELECT
+          *
+        FROM
+          sysRecord AS a
+        WHERE
+          nodeIp = #{nodeIp}
+    </select>
+
+    <select id="selectSysRecordByStatus" resultType="com.zy.recursion.entity.sysRecord">
+        SELECT
+          *
+        FROM
+          sysRecord AS a
+        WHERE
+          a.status = #{status} AND a.nodeIp = #{nodeIp}
+    </select>
+
+
+    <delete id="deleteSysRecord">
+        DELETE FROM sysRecord WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteSysRecordBySatus">
+        DELETE FROM sysRecord WHERE status = #{status} AND nodeIp = #{nodeIp}
+    </delete>
+
+
+    <update id="updateSysRecord" parameterType="com.zy.recursion.entity.sysRecord">
+        update sysRecord
+        <set>
+            <if test="handleName!=null">
+                handleName = #{handleName},
+            </if>
+            <if test="status!=null">
+                status = #{status},
+            </if>
+            <if test="type!=null">
+                `type` = #{type},
+            </if>
+            <if test="ttl!=null">
+                ttl = #{ttl},
+            </if>
+            <if test="data!=null">
+                `data` = #{data},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>
