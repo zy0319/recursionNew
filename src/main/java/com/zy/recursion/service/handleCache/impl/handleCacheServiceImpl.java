@@ -9,6 +9,8 @@ import com.zy.recursion.service.handleCache.handleCacheService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -22,8 +24,9 @@ public class handleCacheServiceImpl implements handleCacheService {
     public void addHandleCache(handleCache handleCache){
         JSONObject jsonObject1 = handleCache.getHandleCache();
         Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         String addTime = dateFormat.format(date);
+        Timestamp ts = Timestamp.valueOf(addTime);
         handleCacheLog handleCacheLog = new handleCacheLog();
         handleCacheLog.setTIME(jsonObject1.getString("TIME"));
         handleCacheLog.setRECEIVE(jsonObject1.getInt("RECEIVE"));
@@ -45,7 +48,7 @@ public class handleCacheServiceImpl implements handleCacheService {
         handleCacheLog.setECODE(jsonObject1.getInt("ECODE"));
         handleCacheLog.setGS1(jsonObject1.getInt("GS1"));
         handleCacheLog.setDeviceIp(jsonObject1.getString("deviceIp"));
-        handleCacheLog.setCurrentTime(addTime);
+        handleCacheLog.setCurrentTime(ts);
         System.out.println(handleCacheLog.toString());
         handleCacheDao.addHandleCache(handleCacheLog);
     }
@@ -53,20 +56,15 @@ public class handleCacheServiceImpl implements handleCacheService {
 
     @Override
     public String selectHandleCache(String startTime, String endTime,int page,int pageSize,String deviceIp){
-
-
-        long date = System.currentTimeMillis();
 //        List list = cacheService.selectCache(startTime,endTime);
         PageHelper.startPage(page,pageSize);
         // 设置分页查询条件
 //        Example example = new Example(cache.class);
         PageInfo<handleCacheLog> pageInfo = new PageInfo<>(handleCacheDao.selectHandleCache(startTime,endTime,deviceIp));
         JSONObject jsonObject1 = new JSONObject();
+        jsonObject1.put("sum",pageInfo.getTotal());
         jsonObject1.put("data",pageInfo.getList());
         jsonObject1.put("pages",pageInfo.getPages());
-        long date1 = System.currentTimeMillis();
-        System.out.println("==========");
-        System.out.println(date1-date);
         return jsonObject1.toString();
     }
 }

@@ -1,10 +1,11 @@
 package com.zy.recursion.entity;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 public class handleCacheLog implements Serializable {
 
-    private String currentTime;
+    private Timestamp currentTime;
     private String TIME;
     private int RECEIVE;
     private int DROP;
@@ -26,11 +27,11 @@ public class handleCacheLog implements Serializable {
     private int GS1;
     private String deviceIp;
 
-    public String getCurrentTime() {
+    public Timestamp getCurrentTime() {
         return currentTime;
     }
 
-    public void setCurrentTime(String currentTime) {
+    public void setCurrentTime(Timestamp currentTime) {
         this.currentTime = currentTime;
     }
 

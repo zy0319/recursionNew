@@ -76,7 +76,7 @@ public class ipLimitServiceImpl implements ipLimitService {
         }
         ConnectLinuxCommand.clearStringFromFile(filePath,deviceIp);
         ConnectLinuxCommand.writeStringToFile(filePath,list1,deviceIp);
-        Stack result = ConnectLinuxCommand.sendSet1(filePath,deviceIp);
+        Stack result = ConnectLinuxCommand.sendSet(filePath,deviceIp);
         returnMessage returnMessage = new returnMessage();
         if (result.size()==1){
             returnMessage.setMessage(result.pop().toString());

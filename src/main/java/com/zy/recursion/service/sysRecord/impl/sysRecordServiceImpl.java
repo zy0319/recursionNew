@@ -81,7 +81,7 @@ public class sysRecordServiceImpl implements sysRecordService {
         }
         ConnectLinuxCommand.clearStringFromFile(filePath,nodeIp);
         ConnectLinuxCommand.writeStringToFile1(filePath,list1,nodeIp);
-        Stack result = ConnectLinuxCommand.sendSet(filePath,nodeIp);
+        Stack result = ConnectLinuxCommand.sendSet1(filePath,nodeIp);
         returnMessage returnMessage = new returnMessage();
         if (result.size()==1){
             returnMessage.setMessage(result.pop().toString());

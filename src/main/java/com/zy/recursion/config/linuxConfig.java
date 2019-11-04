@@ -108,7 +108,6 @@ public class linuxConfig  {
     @Scheduled(cron = "${address.javaRefresh}")
     @DependsOn
     @Async("taskExecutor")
-
     public void testOne1() throws IOException {
         //每2小时执行一次缓存
 //        LinuxMessage();
@@ -120,7 +119,6 @@ public class linuxConfig  {
     @Scheduled(cron = "${address.javaRefresh1}")
     @DependsOn
     @Async("taskExecutor")
-
     public void testOne2() throws IOException {
         //每2小时执行一次缓存
 //        LinuxMessage();
