@@ -39,6 +39,14 @@
           a.status = #{status} AND a.nodeIp = #{nodeIp}
     </select>
 
+    <select id="selectIpLimitByStatus1" resultType="com.zy.recursion.entity.ipLimit">
+        SELECT
+          *
+        FROM
+          ipLimit AS a
+        WHERE
+          a.status = #{status1} or a.status = #{status2} AND a.nodeIp = #{nodeIp}
+    </select>
 
     <delete id="deleteIpLimit">
         DELETE FROM ipLimit WHERE id = #{id}

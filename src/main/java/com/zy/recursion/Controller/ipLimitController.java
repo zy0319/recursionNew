@@ -53,7 +53,7 @@ public class ipLimitController {
         JSONObject jsonObject = new JSONObject(requesyBody);
         int id = Integer.parseInt(jsonObject.getString("id"));
         String nodeIp = jsonObject.getString("nodeIp");
-        String limitVal = jsonObject.getString("limitVal");
+        String limitVal = jsonObject.getString("limitVal").replace("/","\\/");
         return ipLimitService.deleteIpLimit(id,address.getIpLimitPath(),limitVal,nodeIp);
     }
 

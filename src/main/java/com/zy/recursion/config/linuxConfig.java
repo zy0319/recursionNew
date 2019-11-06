@@ -1,10 +1,7 @@
 package com.zy.recursion.config;
-
-import com.zy.recursion.entity.address;
 import com.zy.recursion.entity.device;
 import com.zy.recursion.entity.handleCache;
 import com.zy.recursion.entity.linuxMessage;
-import com.zy.recursion.service.handleCache.handleCacheService;
 import com.zy.recursion.util.ConnectLinuxCommand;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.List;
 
@@ -34,6 +30,7 @@ public class linuxConfig  {
 
     @Autowired
     private com.zy.recursion.service.handleCache.handleCacheService handleCacheService;
+
     @PostConstruct
     public void init() throws IOException {
         //系统启动中。。。加载codeMap
@@ -73,7 +70,6 @@ public class linuxConfig  {
         int n = 0;
         for (device device:list){
             JSONObject result = new ConnectLinuxCommand().logRead1(device,address.getAddress());
-            System.out.println(result);
             handleCache handleCache = new handleCache();
             handleCache.setHandleCache(result);
             handleCaches[n] = handleCache;

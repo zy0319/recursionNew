@@ -355,7 +355,6 @@ public class Linux {
                             list2.add("正常");
                             jsonObject3.put("status1","正常");
                         }
-                        return linuxMessage.getCpuUtilization().toString();
                     }
                 }
                 jsonObject3.put("deviceIp",ip);

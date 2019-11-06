@@ -68,21 +68,31 @@ public class ipLimitServiceImpl implements ipLimitService {
         for (ipLimit ipLimit : list) {
             list1.add(ipLimit.getDeviceIp()+"|"+ipLimit.getLimit());
         }
-        List<ipLimit> list2 = ipLimitDao.selectIpLimitByStatus("1",deviceIp);
-        for (ipLimit ipLimit : list2) {
-            System.out.println("======="+ipLimit.toString());
-            ipLimit.setStatus(0);
-            ipLimitDao.updateIpLimit(ipLimit);
-        }
+        List<ipLimit> list2 = ipLimitDao.selectIpLimitByStatus1("1","2",deviceIp);
         ConnectLinuxCommand.clearStringFromFile(filePath,deviceIp);
         ConnectLinuxCommand.writeStringToFile(filePath,list1,deviceIp);
         Stack result = ConnectLinuxCommand.sendSet(filePath,deviceIp);
         returnMessage returnMessage = new returnMessage();
         if (result.size()==1){
+            for (ipLimit ipLimit : list2) {
+                ipLimit.setStatus(0);
+                ipLimitDao.updateIpLimit(ipLimit);
+            }
             returnMessage.setMessage(result.pop().toString());
             returnMessage.setStatus(1);
         }
         else {
+            for (ipLimit ipLimit : list2) {
+                ipLimit.setStatus(2);
+                ipLimitDao.updateIpLimit(ipLimit);
+            }
+            List<String> list3 = new ArrayList<>();
+            List<ipLimit> list4 = ipLimitDao.selectIpLimitByStatus("0",deviceIp);
+            for (ipLimit ipLimit : list4) {
+                list3.add(ipLimit.getDeviceIp()+"|"+ipLimit.getLimit());
+            }
+            ConnectLinuxCommand.clearStringFromFile(filePath,deviceIp);
+            ConnectLinuxCommand.writeStringToFile(filePath,list3,deviceIp);
             returnMessage.setMessage(result.pop().toString());
             returnMessage.setStatus(0);
         }

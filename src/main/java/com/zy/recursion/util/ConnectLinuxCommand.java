@@ -13,7 +13,6 @@ import com.zy.recursion.entity.device;
 import com.zy.recursion.entity.ipLimit;
 import com.zy.recursion.entity.returnMessage;
 import com.zy.recursion.entity.sysRecord;
-import io.micrometer.core.instrument.util.StringEscapeUtils;
 import io.micrometer.core.instrument.util.StringUtils;
 import org.slf4j.Logger;
 import org.json.JSONObject;
@@ -711,7 +710,7 @@ public class ConnectLinuxCommand {
 
     public static void writeStringToFile1(String filePath,List<String> info,String deviceIp) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("#IP地址|限速值(-1:白名单; 0:黑名单; >=1:限速qps)");
+        stringBuilder.append("#强解记录集ID | 强解handle名 | TTL | INDEX | TYPE | data");
         for (String s : info) {
             stringBuilder.append("\n").append(s);
         }

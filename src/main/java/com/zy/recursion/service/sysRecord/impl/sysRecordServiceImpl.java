@@ -68,27 +68,40 @@ public class sysRecordServiceImpl implements sysRecordService {
     public returnMessage sendSysRecordConfig(String filePath,String nodeIp) throws IOException{
         List<sysRecord> list = sysRecordDao.selectSysRecord(nodeIp);
         List<String> list1 = new ArrayList<>();
-        list1.add("#强解记录集ID | 强解handle名 | TTL | INDEX | TYPE | data");
         int n=1;
         for (sysRecord sysRecord : list) {
             list1.add(n+"|"+sysRecord.getHandleName()+"|"+sysRecord.getTtl()+"|"+sysRecord.getIndex()+"|"+sysRecord.getType()+"|"+sysRecord.getData());
             n++;
         }
-        List<sysRecord> list2 = sysRecordDao.selectSysRecordByStatus("1",nodeIp);
-        for (sysRecord sysRecord : list2) {
-            sysRecord.setStatus(0);
-            sysRecordDao.updateSysRecord(sysRecord);
-        }
+        List<sysRecord> list2 = sysRecordDao.selectSysRecordByStatus1("1","2",nodeIp);
         ConnectLinuxCommand.clearStringFromFile(filePath,nodeIp);
         ConnectLinuxCommand.writeStringToFile1(filePath,list1,nodeIp);
         Stack result = ConnectLinuxCommand.sendSet1(filePath,nodeIp);
         returnMessage returnMessage = new returnMessage();
         if (result.size()==1){
+            for (sysRecord sysRecord : list2) {
+                sysRecord.setStatus(0);
+                sysRecordDao.updateSysRecord(sysRecord);
+            }
             returnMessage.setMessage(result.pop().toString());
             returnMessage.setStatus(1);
         }
         else {
-            returnMessage.setMessage(result.pop().toString());
+            for (sysRecord sysRecord : list2) {
+                sysRecord.setStatus(2);
+                sysRecordDao.updateSysRecord(sysRecord);
+            }
+            List<sysRecord> list3 = sysRecordDao.selectSysRecordByStatus("0",nodeIp);
+            List<String> list4 = new ArrayList<>();
+            int m=1;
+            for (sysRecord sysRecord : list3) {
+                list4.add(m+"|"+sysRecord.getHandleName()+"|"+sysRecord.getTtl()+"|"+sysRecord.getIndex()+"|"+sysRecord.getType()+"|"+sysRecord.getData());
+                m++;
+            }
+            ConnectLinuxCommand.clearStringFromFile(filePath,nodeIp);
+            ConnectLinuxCommand.writeStringToFile1(filePath,list4,nodeIp);
+            String result1 = result.pop().toString();
+            returnMessage.setMessage(result1);
             returnMessage.setStatus(0);
         }
         return returnMessage;
