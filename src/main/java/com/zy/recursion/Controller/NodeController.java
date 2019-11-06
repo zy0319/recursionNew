@@ -24,6 +24,8 @@ public class NodeController {
 
     @Autowired
     private deviceService deviceService;
+    @Autowired
+    private com.zy.recursion.entity.address address;
 
     @annotation.UserLoginToken
     @CrossOrigin
@@ -129,12 +131,15 @@ public class NodeController {
     @annotation.UserLoginToken
     @CrossOrigin
     @PostMapping(value = "/delete")
-    public returnMessage deleteNode(@RequestBody(required = false) String requesyBody) {
+    public returnMessage deleteNode(@RequestBody(required = false) String requesyBody) throws IOException {
+        ConnectLinuxCommand connectLinuxCommand = new ConnectLinuxCommand();
         JSONObject jsonObject = new JSONObject(requesyBody);
         returnMessage returnMessage = new returnMessage();
         if (jsonObject.has("nodeName")) {
             nodeService.deleteNode(jsonObject.getString("nodeName"));
             deviceService.deleteDeviceByNodename(jsonObject.getString("nodeName"));
+            List<device> list = deviceService.selectAll1();
+            connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
             returnMessage.setStatus(0);
             returnMessage.setMessage("删除成功");
             return returnMessage;

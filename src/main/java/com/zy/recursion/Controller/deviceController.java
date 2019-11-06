@@ -25,6 +25,11 @@ public class deviceController {
     @Autowired
     private nodeService nodeService;
 
+    @Autowired
+    private com.zy.recursion.entity.address address;
+
+    ConnectLinuxCommand connectLinuxCommand = new ConnectLinuxCommand();
+
     @annotation.UserLoginToken
     @CrossOrigin
     @PostMapping(value = "/register")
@@ -50,6 +55,8 @@ public class deviceController {
                             device.setDeviceUserName(jsonObject.getString("deviceUserName"));
                             device.setDevicePwd(jsonObject.getString("devicePwd"));
                             deviceService.addDevice(device);
+                            List<device> list = deviceService.selectAll1();
+                            connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
                             node = nodeService.selectNodeByNodename(jsonObject.getString("nodeName"));
                             node.setDeviceCount(node.getDeviceCount() + 1);
                             nodeService.updateNode(node);
@@ -132,6 +139,16 @@ public class deviceController {
                 node = nodeService.selectNodeByNodename(jsonObject.getString("nodeName"));
                 node.setDeviceCount(node.getDeviceCount() - 1);
                 nodeService.updateNode(node);
+                try
+                {
+                    List<device> list = deviceService.selectAll1();
+                    connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+                    Thread.currentThread().sleep(1000);//毫秒
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+
                 returnMessage.setStatus(0);
                 returnMessage.setMessage("删除成功");
                 return returnMessage;
@@ -164,6 +181,15 @@ public class deviceController {
                         device.setDeviceIp(jsonObject.getString("newDeviceIp"));
                         device.setDeviceType(jsonObject.getString("deviceType"));
                         deviceService.updateDevice(device);
+                        List<device> list = deviceService.selectAll1();
+                        try
+                        {
+                            connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+                            Thread.currentThread().sleep(1000);//毫秒
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }
                         returnMessage.setStatus(0);
                         returnMessage.setMessage("修改成功");
                         return returnMessage;
@@ -178,6 +204,15 @@ public class deviceController {
                     device.setDeviceIp(jsonObject.getString("preDeviceIp"));
                     device.setDeviceType(jsonObject.getString("deviceType"));
                     deviceService.updateDevice(device);
+                    try
+                    {
+                        List<device> list = deviceService.selectAll1();
+                        connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+                        Thread.currentThread().sleep(1000);//毫秒
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
                     returnMessage.setStatus(0);
                     returnMessage.setMessage("修改成功");
                     return returnMessage;

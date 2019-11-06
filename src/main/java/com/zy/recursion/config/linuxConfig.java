@@ -1,7 +1,10 @@
 package com.zy.recursion.config;
+
+import com.zy.recursion.entity.address;
 import com.zy.recursion.entity.device;
 import com.zy.recursion.entity.handleCache;
 import com.zy.recursion.entity.linuxMessage;
+import com.zy.recursion.service.handleCache.handleCacheService;
 import com.zy.recursion.util.ConnectLinuxCommand;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.List;
 
@@ -30,7 +34,6 @@ public class linuxConfig  {
 
     @Autowired
     private com.zy.recursion.service.handleCache.handleCacheService handleCacheService;
-
     @PostConstruct
     public void init() throws IOException {
         //系统启动中。。。加载codeMap
@@ -38,6 +41,7 @@ public class linuxConfig  {
         handleCaches = new handleCache[list.size()];
         linuxMessages = new linuxMessage[list.size()];
         ConnectLinuxCommand.login1(list);
+
     }
 
     public void LinuxMessage() throws IOException {
@@ -52,12 +56,19 @@ public class linuxConfig  {
             Float memoryUtilization = new ConnectLinuxCommand().memory_utilization(result[2]);
             Float cpuUtilization = new ConnectLinuxCommand().cpu_utilization(result[3]);
             linuxMessage linuxMessage = new linuxMessage();
-            linuxMessage.setRxkB(Float.valueOf(flow.getString("rxkB")));
-            linuxMessage.setTxkB(Float.valueOf(flow.getString("txkB")));
+            if (flow != null){
+                linuxMessage.setRxkB(Float.valueOf(flow.getString("rxkB")));
+                linuxMessage.setTxkB(Float.valueOf(flow.getString("txkB")));
+                linuxMessage.setHandle_cache_stats(flow.toString());
+            }
+            else{
+                linuxMessage.setRxkB(2.5f);
+                linuxMessage.setTxkB(5.5f);
+            }
             linuxMessage.setCpuUtilization(cpuUtilization);
             linuxMessage.setDiskUtilization(diskUtilization);
             linuxMessage.setMemoryUtilization(memoryUtilization);
-            linuxMessage.setHandle_cache_stats(flow.toString());
+
             linuxMessage.setDeviceIp(device.getDeviceIp());
             linuxMessages[n] = linuxMessage;
             n = n+1;
@@ -70,6 +81,7 @@ public class linuxConfig  {
         int n = 0;
         for (device device:list){
             JSONObject result = new ConnectLinuxCommand().logRead1(device,address.getAddress());
+
             handleCache handleCache = new handleCache();
             handleCache.setHandleCache(result);
             handleCaches[n] = handleCache;
@@ -83,6 +95,7 @@ public class linuxConfig  {
             handleCacheService.addHandleCache(handleCache);
         }
     }
+
 
 //
 //    @PreDestroy
@@ -121,4 +134,6 @@ public class linuxConfig  {
 //        LinuxHandleCache();
         addHandleCache();
     }
+
+
 }

@@ -13,6 +13,9 @@ import com.zy.recursion.entity.device;
 import com.zy.recursion.entity.ipLimit;
 import com.zy.recursion.entity.returnMessage;
 import com.zy.recursion.entity.sysRecord;
+import com.zy.recursion.config.linuxConfig;
+import com.zy.recursion.entity.*;
+import io.micrometer.core.instrument.util.StringEscapeUtils;
 import io.micrometer.core.instrument.util.StringUtils;
 import org.slf4j.Logger;
 import org.json.JSONObject;
@@ -32,6 +35,12 @@ public class ConnectLinuxCommand {
 
     @Autowired
     com.zy.recursion.service.device.deviceService deviceService;
+
+    @Autowired
+    com.zy.recursion.entity.address address;
+
+
+
 
     public static Boolean login(String ip, String name, String password) throws IOException {
         boolean flag = false;
@@ -702,7 +711,7 @@ public class ConnectLinuxCommand {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("#IP地址|限速值(-1:白名单; 0:黑名单; >=1:限速qps)\n" + "#172.171.1.79|1000");
         for (String s : info) {
-            stringBuilder.append("\n").append(s);
+            stringBuilder.append("\n").append(s );
         }
         String[] cmd = {"echo -e " + "\'"+stringBuilder+"\'"+"> "+filePath};
         ConnectLinuxCommand.execute(deviceIp, cmd);
@@ -748,6 +757,74 @@ public class ConnectLinuxCommand {
         }
         bufferedReader.close();
         return stack;
+    }
+
+    public  void updateDeviceIPsAndConnc(List<device> list,address address) throws IOException {
+        linuxConfig  linuxConfigService = new linuxConfig();
+        deviceIps=null;
+        connections=null;
+        linuxConfig.handleCaches = new handleCache[list.size()];
+        linuxConfig.linuxMessages = new linuxMessage[list.size()];
+        logger.info("deviceIps is "+deviceIps+"connections is "+connections);
+        login1(list);
+        logger.info("start linuxMessage time is "+System.currentTimeMillis());
+        LinuxMessage(list,address);
+        logger.info("end linuxMessage time is "+System.currentTimeMillis());
+        logger.info("start LinuxHandleCache time is "+System.currentTimeMillis());
+        LinuxHandleCache(list,address);
+        logger.info("end LinuxHandleCache time is "+System.currentTimeMillis());
+        logger.info("update deviceIPs and connection success");
+        for(int i =0 ;i<=deviceIps.length-1;i++){
+            logger.info("device ip"+i+"is"+deviceIps[i]);
+        }
+        logger.info("connections is "+connections.length);
+        logger.info("handleCaches is "+linuxConfig.handleCaches.length);
+        logger.info("linuxMessages is "+linuxConfig.linuxMessages.length);
+        logger.info("deviceIps is "+deviceIps+"connections is "+connections);
+    }
+
+    public void LinuxMessage(List<device> list,address address) throws IOException {
+       
+        int n = 0;
+        for (device device:list){
+            String[] cmd = new String[]{"df -k","sar -n DEV 1 1","sar -r 1 1","sar -u 1 1"};//硬盘、流量、内存、cpu
+            String[] result = ConnectLinuxCommand.execute(device.getDeviceIp(),cmd);
+            Float diskUtilization = new ConnectLinuxCommand().disk_utilization(result[0]);
+
+
+            JSONObject flow = new ConnectLinuxCommand().networkCard(result[1],address.getNetworkCard());
+            Float memoryUtilization = new ConnectLinuxCommand().memory_utilization(result[2]);
+            Float cpuUtilization = new ConnectLinuxCommand().cpu_utilization(result[3]);
+            linuxMessage linuxMessage = new linuxMessage();
+            if (flow != null){
+                linuxMessage.setRxkB(Float.valueOf(flow.getString("rxkB")));
+                linuxMessage.setTxkB(Float.valueOf(flow.getString("txkB")));
+                linuxMessage.setHandle_cache_stats(flow.toString());
+            }
+            else{
+                linuxMessage.setRxkB(2.5f);
+                linuxMessage.setTxkB(5.5f);
+            }
+            linuxMessage.setCpuUtilization(cpuUtilization);
+            linuxMessage.setDiskUtilization(diskUtilization);
+            linuxMessage.setMemoryUtilization(memoryUtilization);
+            linuxMessage.setDeviceIp(device.getDeviceIp());
+            linuxConfig.linuxMessages[n] = linuxMessage;
+            n = n+1;
+        }
+    }
+
+    public void LinuxHandleCache(List<device> list,address address) throws IOException {
+
+        int n = 0;
+        for (device device:list){
+            JSONObject result = new ConnectLinuxCommand().logRead1(device,address.getAddress());
+            System.out.println(result);
+            handleCache handleCache = new handleCache();
+            handleCache.setHandleCache(result);
+            linuxConfig.handleCaches[n] = handleCache;
+            n = n+1;
+        }
     }
 
     public static void main(String[] args) throws IOException {
