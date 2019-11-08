@@ -14,6 +14,7 @@ public class handleCacheLog implements Serializable {
     private int SUCCESS;
     private int OTHER;
     private float SUCCESS_RATE;
+    private int HIT_ALL;
     private float HIT_RATE;
     private int RECUR;
     private int AVG_RECUR_TIME;
@@ -209,6 +210,7 @@ public class handleCacheLog implements Serializable {
                 ", OTHER=" + OTHER +
                 ", SUCCESS_RATE=" + SUCCESS_RATE +
                 ", HIT_RATE=" + HIT_RATE +
+                ", HIT_ALL=" + HIT_ALL +
                 ", RECUR=" + RECUR +
                 ", AVG_RECUR_TIME=" + AVG_RECUR_TIME +
                 ", RECUR_SUCCESS=" + RECUR_SUCCESS +
@@ -221,5 +223,13 @@ public class handleCacheLog implements Serializable {
                 ", GS1=" + GS1 +
                 ", deviceIp='" + deviceIp + '\'' +
                 '}';
+    }
+
+    public int getHIT_ALL() {
+        return HIT_ALL;
+    }
+
+    public void setHIT_ALL(int HIT_ALL) {
+        this.HIT_ALL = HIT_ALL;
     }
 }
