@@ -5,6 +5,9 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.zy.recursion.entity.user;
+import com.zy.recursion.service.user.userService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -14,6 +17,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 
 public class AuthenticationInterceptor implements HandlerInterceptor {
+
+    @Autowired
+    private userService userService;
 
 
     @Override
@@ -50,15 +56,20 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 if (userName == null) {
                     throw new RuntimeException("403");
                 }
+                user userEntity = userService.getUserByName(userName);
+                if (userEntity == null || userEntity.getPasswd() == null || userEntity.getPasswd() == ""){
+                    throw new RuntimeException("没有此用户或者密码为空");
+                }
                 // 验证 token
-                JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256("123456")).build();
+                //JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256("123456")).build();
+                JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(userEntity.getPasswd())).build();
                 try {
                     jwtVerifier.verify(token);
                 } catch (JWTVerificationException e) {
                     throw new RuntimeException("401");
                 }
                 //将验证通过后的用户信息放到请求中
-//                httpServletRequest.setAttribute("currentUser", user);
+               httpServletRequest.setAttribute("currentUser", userEntity);
                 return true;
             }
         }

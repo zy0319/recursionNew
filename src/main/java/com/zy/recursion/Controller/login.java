@@ -2,7 +2,9 @@ package com.zy.recursion.Controller;
 
 
 import com.zy.recursion.config.annotation;
+import com.zy.recursion.entity.user;
 import com.zy.recursion.service.token.loginToken;
+import com.zy.recursion.service.user.userService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,23 +18,41 @@ public class login {
     @Autowired
     private loginToken loginToken;
 
+    @Autowired
+    private userService userService;
+
+    @Autowired
+    private user user;
+
+
 
 
     @CrossOrigin
-    @PostMapping(value = "")
-    public String cacheDelete(@RequestBody(required = false) String requesyBody) throws IOException {
+    @PostMapping(value = "",produces = {"text/html;charset=UTF-8"})
+    public String loginAction(@RequestBody(required = false) String requesyBody) throws IOException {
         JSONObject jsonObject = new JSONObject(requesyBody);
         JSONObject jsonObject1 = new JSONObject();
         String username = jsonObject.getString("userName");
         String pwd = jsonObject.getString("password");
-        if(username.equals("admin") && pwd.equals("123456")){
+        user.setUser(username);
+        user.setPasswd(pwd);
+        if(userService.checkUserAndPasswd(user)){
+            user userEntity = userService.getUserByName(username);
             String token = loginToken.getToken(username,pwd);
             jsonObject1.put("token", token);
+            jsonObject1.put("role",String.valueOf(userEntity.getRole()));
+            jsonObject1.put("node",userEntity.getNodeName());
             return jsonObject1.toString();
-
-        }else
+        }
+//        if(username.equals("admin") && pwd.equals("123456")){
+//            String token = loginToken.getToken(username,pwd);
+//            jsonObject1.put("token", token);
+//            return jsonObject1.toString();
+//
+//        }
+        else
         {
-            jsonObject1.put("status","1");
+            jsonObject1.put("status","登录失败");
             return jsonObject1.toString();
         }
     }

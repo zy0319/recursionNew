@@ -23,6 +23,9 @@ public class handleCacheServiceImpl implements handleCacheService {
 
     @Override
     public void addHandleCache(handleCache handleCache){
+        if (handleCache == null){
+            return;
+        }
         JSONObject jsonObject1 = handleCache.getHandleCache();
         Date date = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -40,6 +43,7 @@ public class handleCacheServiceImpl implements handleCacheService {
         handleCacheLog.setAVG_RECUR_TIME(jsonObject1.getInt("AVG_RECUR_TIME"));
         handleCacheLog.setSUCCESS_RATE(jsonObject1.getFloat("SUCCESS_RATE"));
         handleCacheLog.setHIT_RATE(jsonObject1.getFloat("HIT_RATE"));
+        handleCacheLog.setHIT_ALL(jsonObject1.getInt("HIT_ALL"));
         handleCacheLog.setRECUR_SUCCESS(jsonObject1.getFloat("RECUR_SUCCESS"));
         handleCacheLog.setALL_RECEIVE(jsonObject1.getFloat("ALL_RECEIVE"));
         handleCacheLog.setTotal_time(jsonObject1.getString("total_time"));

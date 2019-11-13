@@ -48,6 +48,7 @@ public class http {
         int success = 0;
         int other = 0;
         float success_rate = 0;
+        int hit_all = 0;
         float hit_rate = 0;
         int recur = 0;
         int avg_recur = 0;
@@ -76,6 +77,7 @@ public class http {
                     recur = recur+jsonObject1.getInt("RECUR");
                     avg_recur = avg_recur+jsonObject1.getInt("AVG_RECUR_TIME");
                     success_rate = success_rate+jsonObject1.getFloat("SUCCESS_RATE");
+                    hit_all = hit_all + jsonObject1.getInt("HIT_ALL");
                     hit_rate = hit_rate+jsonObject1.getFloat("HIT_RATE");
                     recur_success = recur_success+jsonObject1.getFloat("RECUR_SUCCESS");
                     all_receive = all_receive+jsonObject1.getFloat("ALL_RECEIVE");
@@ -109,6 +111,7 @@ public class http {
         jsonObject2.put("SUCCESS", success);
         jsonObject2.put("OTHER", other);
         jsonObject2.put("RECUR", recur);
+        jsonObject2.put("HIT_ALL",hit_all);
         jsonObject2.put("ALL_RECEIVE", all_receive);
         jsonObject2.put("total_time", total_time);
         jsonObject2.put("HANDLE", handle);
