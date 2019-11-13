@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zy.recursion.dao.userDao">
+    <insert id="addUser">
+        INSERT INTO userInfo (
+          user,
+          passwd,
+          nodeName,
+          role
+        )
+        VALUES
+          (
+            #{user},
+            #{passwd},
+            #{nodeName},
+             #{role}
+          )
+    </insert>
+
+    <select id="selectUser" resultType="com.zy.recursion.entity.user">
+        SELECT
+          *
+        FROM
+          userInfo
+          where
+              <if test="user != null">
+                  user = #{user}
+              </if>
+              <if test="id != null">
+                  and <![CDATA[ id <> #{id} ]]>
+              </if>
+    </select>
+
+    <select id="selectAllUser" resultType="com.zy.recursion.entity.user">
+        SELECT
+          *
+        FROM
+          userInfo
+          WHERE
+          role != '0'
+    </select>
+
+    <update id="updateUser" parameterType="com.zy.recursion.entity.user">
+        update userInfo
+        <set>
+            <if test="user!=null">
+                user = #{user},
+            </if>
+            <if test="passwd!=null">
+                passwd = #{passwd},
+            </if>
+            <if test="nodeName!=null">
+                nodeName = #{nodeName},
+            </if>
+            <if test="role!=null">
+                role = #{role},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="selectUserForId" resultType="com.zy.recursion.entity.user">
+        SELECT
+          *
+        FROM
+          userInfo AS a
+          WHERE
+          a.id = #{id}
+    </select>
+
+    <delete id="deleteUser" parameterType="com.zy.recursion.entity.user">
+        DELETE FROM userInfo WHERE id = #{id}
+    </delete>
+</mapper>

@@ -3,6 +3,7 @@ package com.zy.recursion.Controller;
 import com.zy.recursion.config.annotation;
 import com.zy.recursion.entity.device;
 import com.zy.recursion.entity.node;
+import com.zy.recursion.entity.user;
 import com.zy.recursion.service.device.deviceService;
 import com.zy.recursion.service.node.nodeService;
 import com.zy.recursion.util.ConnectLinuxCommand;
@@ -13,6 +14,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import com.zy.recursion.entity.returnMessage;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 
 @RestController
@@ -26,6 +32,8 @@ public class NodeController {
     private deviceService deviceService;
     @Autowired
     private com.zy.recursion.entity.address address;
+
+
 
     @annotation.UserLoginToken
     @CrossOrigin
@@ -65,7 +73,21 @@ public class NodeController {
     @CrossOrigin
     @PostMapping(value = "/selectAll")
     public List<node> selectAll() {
-        List<node> list = nodeService.selectAll();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        user userEntity=(user)request.getAttribute("currentUser");
+        if (userEntity == null){
+            return null;
+        }
+        List<node> list = new ArrayList<node>();
+        int role = userEntity.getRole();
+        //0为超级管理员；1为节点管理员；2为普通用户
+        if (role == 0 || role == 2){
+             list = nodeService.selectAll();
+        }
+        else if(role == 1){
+            node nodeEntity = nodeService.selectNodeByNodename(userEntity.getNodeName());
+            list.add(nodeEntity);
+        }
         return list;
     }
 
