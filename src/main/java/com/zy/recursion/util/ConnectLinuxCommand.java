@@ -583,6 +583,7 @@ public class ConnectLinuxCommand {
         jsonObject.put("OID", oid);
         jsonObject.put("ECODE", ecode);
         jsonObject.put("GS1", gs1);
+        System.out.println("======="+jsonObject.toString());
         return jsonObject;
     }
 
@@ -784,14 +785,11 @@ public class ConnectLinuxCommand {
     }
 
     public void LinuxMessage(List<device> list,address address) throws IOException {
-       
         int n = 0;
         for (device device:list){
             String[] cmd = new String[]{"df -k","sar -n DEV 1 1","sar -r 1 1","sar -u 1 1"};//硬盘、流量、内存、cpu
             String[] result = ConnectLinuxCommand.execute(device.getDeviceIp(),cmd);
             Float diskUtilization = new ConnectLinuxCommand().disk_utilization(result[0]);
-
-
             JSONObject flow = new ConnectLinuxCommand().networkCard(result[1],address.getNetworkCard());
             Float memoryUtilization = new ConnectLinuxCommand().memory_utilization(result[2]);
             Float cpuUtilization = new ConnectLinuxCommand().cpu_utilization(result[3]);
@@ -815,7 +813,6 @@ public class ConnectLinuxCommand {
     }
 
     public void LinuxHandleCache(List<device> list,address address) throws IOException {
-
         int n = 0;
         for (device device:list){
             JSONObject result = new ConnectLinuxCommand().logRead1(device,address.getAddress());

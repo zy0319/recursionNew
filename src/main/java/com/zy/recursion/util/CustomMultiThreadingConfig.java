@@ -29,9 +29,4 @@ public class CustomMultiThreadingConfig  {
         executor.initialize();
         return executor;
     }
-
-
-
-
-
 }

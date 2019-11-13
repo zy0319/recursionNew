@@ -10,9 +10,9 @@ spring:
       content-type: text/html
   datasource:
     druid:
-      url: jdbc:mysql://localhost:3306/node?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=GMT%2b8
+      url: jdbc:mysql://172.171.1.80:3306/handle?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=GMT%2b8
       username: root
-      password: zhangyi20120.0
+      password: 123456
       initial-size: 1
       min-idle: 1
       max-active: 20
@@ -21,7 +21,6 @@ spring:
       driver-class-name: com.mysql.jdbc.Driver
   jackson:
     time-zone: GMT+8
-
 address:
   address: /home/fnii/handle_cache/log/handle_cache_stats
   networkCard: em3

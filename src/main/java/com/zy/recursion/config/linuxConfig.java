@@ -68,7 +68,6 @@ public class linuxConfig  {
             linuxMessage.setCpuUtilization(cpuUtilization);
             linuxMessage.setDiskUtilization(diskUtilization);
             linuxMessage.setMemoryUtilization(memoryUtilization);
-
             linuxMessage.setDeviceIp(device.getDeviceIp());
             linuxMessages[n] = linuxMessage;
             n = n+1;
@@ -81,7 +80,6 @@ public class linuxConfig  {
         int n = 0;
         for (device device:list){
             JSONObject result = new ConnectLinuxCommand().logRead1(device,address.getAddress());
-
             handleCache handleCache = new handleCache();
             handleCache.setHandleCache(result);
             handleCaches[n] = handleCache;
