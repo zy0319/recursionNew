@@ -84,7 +84,7 @@ public class Linux {
             for (device o : list) {
                 String ip = o.getDeviceIp();
                 for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    if (linuxMessage.getDeviceIp().equals(ip)){
+                    if (ip != null && ip.equals(linuxMessage.getDeviceIp())){
                         rxkb = rxkb + linuxMessage.getRxkB();
                         txkb = txkb + linuxMessage.getTxkB();
                     }
@@ -185,7 +185,7 @@ public class Linux {
                     recursion++;
                 }
                 for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    if (linuxMessage.getDeviceIp().equals(ip)){
+                    if (ip != null && ip.equals(linuxMessage.getDeviceIp())){
                         float disk1 = linuxMessage.getDiskUtilization();
                         float memory1 = linuxMessage.getMemoryUtilization();
                         float cpu1 = linuxMessage.getCpuUtilization();
@@ -356,7 +356,7 @@ public class Linux {
                 List list2 = new ArrayList();
                 InetAddress address = InetAddress.getByName(ip);
                 for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    if (linuxMessage.getDeviceIp().equals(ip)){
+                    if (ip != null && ip.equals(linuxMessage.getDeviceIp())){
                         float disk1 = linuxMessage.getDiskUtilization();
                         float memory1 = linuxMessage.getMemoryUtilization();
                         float cpu1 = linuxMessage.getCpuUtilization();

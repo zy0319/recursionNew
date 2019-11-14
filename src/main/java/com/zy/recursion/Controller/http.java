@@ -64,7 +64,7 @@ public class http {
         String time = null;
         int cacheDeviceCount = 0;
         for (handleCache handleCache:linuxConfig.handleCaches){
-            if (handleCache.getHandleCache().getString("nodeName").equals(jsonObject.getString("nodeName"))){
+            if (handleCache.getHandleCache() != null && handleCache.getHandleCache().getString("nodeName").equals(jsonObject.getString("nodeName"))){
                 JSONObject jsonObject1 = handleCache.getHandleCache();
                 if (jsonObject1.getString("deviceType").equals("缓存")){
                     cacheDeviceCount++;
