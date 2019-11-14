@@ -1,5 +1,6 @@
 package com.zy.recursion.Controller;
 
+import com.auth0.jwt.algorithms.Algorithm;
 import com.zy.recursion.config.annotation;
 import com.zy.recursion.entity.returnMessage;
 import com.zy.recursion.entity.user;
@@ -9,9 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 
 import java.io.IOException;
+import java.util.Base64;
 
 @RestController
 @RequestMapping(value = "/user", method = RequestMethod.GET)
@@ -32,7 +36,7 @@ public class userController {
         JSONObject jsonObject = new JSONObject(requesyBody);
         returnMessage returnMessage = new returnMessage();
         String userName = jsonObject.getString("user");
-        String passwd = jsonObject.getString("passwd");
+        String passwd = new BASE64Encoder().encode(jsonObject.getString("passwd").getBytes());
         //0：超级管理员；1：节点管理员；2：普通用户
         String role = jsonObject.getString("role");
         String nodeName= jsonObject.getString("nodeName");
@@ -74,7 +78,7 @@ public class userController {
         returnMessage returnMessage = new returnMessage();
         String id = jsonObject.getString("id");
         String userName = jsonObject.getString("user");
-        String passwd = jsonObject.getString("passwd");
+        String passwd = new BASE64Encoder().encode(jsonObject.getString("passwd").getBytes());
         //0：超级管理员；1：节点管理员；2：普通用户
         String role = jsonObject.getString("role");
         String nodeName= jsonObject.getString("nodeName");
