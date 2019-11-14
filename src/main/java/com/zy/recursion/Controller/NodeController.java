@@ -96,7 +96,8 @@ public class NodeController {
     @CrossOrigin
     @PostMapping(value = "/selectAllData")
     public List selectAllData() throws IOException {
-        List<node> list = nodeService.selectAll();
+        //List<node> list = nodeService.selectAll();
+        List<node> list = selectAll();
         List list2 = new ArrayList();
         for (node m : list) {
             if (m.getDeviceCount() != 0) {

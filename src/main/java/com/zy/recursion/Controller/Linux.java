@@ -10,8 +10,10 @@ import com.zy.recursion.service.device.deviceService;
 import com.zy.recursion.util.ConnectLinuxCommand;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +30,16 @@ public class Linux {
 
     @Autowired
     public ConnectLinuxCommand connectLinuxCommand;
+
+    @Value("${threshold.diskThreshold}")
+    public float diskThreshold;
+
+    @Value("${threshold.memoryThreshold}")
+    public float memoryThreshold;
+
+    @Value("${threshold.cpuThreshold}")
+    public float cpuThreshold;
+
 
     @annotation.UserLoginToken
     @CrossOrigin
@@ -159,12 +171,14 @@ public class Linux {
         int common = 0;
         int recursion = 0;
         int cache = 0;
+        float diskThreshold1=diskThreshold;
         if (list.size() != 0) {
             JSONObject jsonObject2 = new JSONObject();
             jsonObject2.put("nodeName",nodeName);
             for (device o : list) {
                 String ip = o.getDeviceIp();
                 String type = o.getDeviceType();
+                InetAddress address = InetAddress.getByName(ip);
                 if (type.equals("缓存")) {
                     cache++;
                 } else if (type.equals("递归")) {
@@ -177,14 +191,23 @@ public class Linux {
                         float cpu1 = linuxMessage.getCpuUtilization();
                         rxkb = rxkb + linuxMessage.getRxkB();
                         txkb = txkb + linuxMessage.getTxkB();
-                        if (disk1 > 0.9 | memory1 > 90) {
+
+                        if (!address.isReachable(3000)){
+                            if (o.getDeviceType().equals("缓存")) {
+                                serious++;
+                            } else {
+                                serious++;
+                            }
+                            break;
+                        }
+                        if (disk1 > diskThreshold | memory1 > memoryThreshold) {
                             if (o.getDeviceType().equals("缓存")) {
                                 imp++;
                             } else {
                                 imp1++;
                             }
                         }
-                        if (cpu1 > 90) {
+                        if (cpu1 > cpuThreshold) {
                             if (o.getDeviceType().equals("缓存")) {
                                 common++;
                             } else {
@@ -331,6 +354,7 @@ public class Linux {
                 String ip = o.getDeviceIp();
                 String type = o.getDeviceType();
                 List list2 = new ArrayList();
+                InetAddress address = InetAddress.getByName(ip);
                 for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
                     if (linuxMessage.getDeviceIp().equals(ip)){
                         float disk1 = linuxMessage.getDiskUtilization();
@@ -339,19 +363,24 @@ public class Linux {
                         disk = disk1 + disk;
                         memory = memory1 + memory;
                         cpu = cpu1 + cpu;
-                        if (disk1 > 0.9) {
+                        if (!address.isReachable(3000)){
+                            list2.add("服务器连接失败");
+                            jsonObject3.put("status1","严重");
+                            break;
+                        }
+                        if (cpu1 > cpuThreshold) {
+                            list2.add("CPU利用率过高");
+                            jsonObject3.put("status1","一般");
+                        }
+                        if (disk1 > diskThreshold) {
                             list2.add("硬盘利用率过高");
-                            jsonObject3.put("status1","一般");
+                            jsonObject3.put("status1","重要");
                         }
-                        if (memory1 > 90) {
-                            list2.add("内存利用率过高");
-                            jsonObject3.put("status1","一般");
-                        }
-                        if (cpu1 > 90) {
+                        if (memory1 > memoryThreshold) {
                             list2.add("内存利用率过高");
                             jsonObject3.put("status1","重要");
                         }
-                        if(disk1<=0.9 && memory1<=90 && cpu1<=90){
+                        if(disk1<=diskThreshold && memory1<=memoryThreshold && cpu1<=cpuThreshold){
                             list2.add("正常");
                             jsonObject3.put("status1","正常");
                         }

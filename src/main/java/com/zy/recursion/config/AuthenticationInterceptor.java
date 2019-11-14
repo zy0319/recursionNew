@@ -5,16 +5,20 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.zy.recursion.entity.user;
 import com.zy.recursion.service.user.userService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
+import java.util.List;
 
 public class AuthenticationInterceptor implements HandlerInterceptor {
 
@@ -60,9 +64,12 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 if (userEntity == null || userEntity.getPasswd() == null || userEntity.getPasswd() == ""){
                     throw new RuntimeException("没有此用户或者密码为空");
                 }
+                //String encondePwd = new BASE64Encoder().encode("123456".getBytes());
+                byte[] bytes = new BASE64Decoder().decodeBuffer(userEntity.getPasswd());
+                String passwd = new String(bytes, "UTF-8");
                 // 验证 token
                 //JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256("123456")).build();
-                JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(userEntity.getPasswd())).build();
+                JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(passwd)).build();
                 try {
                     jwtVerifier.verify(token);
                 } catch (JWTVerificationException e) {

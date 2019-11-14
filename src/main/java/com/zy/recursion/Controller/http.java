@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.List;
 import com.zy.recursion.util.httpPost;
 import javax.servlet.http.HttpServletResponse;
@@ -140,14 +141,14 @@ public class http {
     @annotation.UserLoginToken
     @CrossOrigin
     @PostMapping(value = "/handleResolve")
-    public returnMessage handleResolve(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException {
+    public returnMessage handleResolve(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException, URISyntaxException {
         JSONObject jsonObject = new JSONObject(requestBody);
         String prefixType = jsonObject.getString("prefixType");
         String ip =jsonObject.getString("ip");
         String prefix = jsonObject.getString("prefix");
         if (prefixType.equals("Handle")){
-            if (ip.equals("39.107.238.25") || ip.equals("172.171.1.80")){
-                return httpPost.testSendPostDataByJson(jsonObject);
+            if (ip.equals("39.107.238.25") || ip.equals("172.171.1.80") || ip.equals("172.171.1.79")){
+                return httpPost.testSendGetDataByJson(jsonObject);
             }else{
                 return null;
             }

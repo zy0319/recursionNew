@@ -8,6 +8,8 @@ import com.zy.recursion.service.user.userService;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 import java.io.IOException;
 
@@ -33,11 +35,13 @@ public class login {
         JSONObject jsonObject = new JSONObject(requesyBody);
         JSONObject jsonObject1 = new JSONObject();
         String username = jsonObject.getString("userName");
-        String pwd = jsonObject.getString("password");
+        String encondePwd = new BASE64Encoder().encode(jsonObject.getString("password").getBytes());
         user.setUser(username);
-        user.setPasswd(pwd);
+        user.setPasswd(encondePwd);
         if(userService.checkUserAndPasswd(user)){
             user userEntity = userService.getUserByName(username);
+            byte[] bytes = new BASE64Decoder().decodeBuffer(encondePwd);
+            String pwd = new String(bytes, "UTF-8");
             String token = loginToken.getToken(username,pwd);
             jsonObject1.put("token", token);
             jsonObject1.put("role",String.valueOf(userEntity.getRole()));
