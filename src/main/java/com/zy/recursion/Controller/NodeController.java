@@ -8,9 +8,12 @@ import com.zy.recursion.service.device.deviceService;
 import com.zy.recursion.service.node.nodeService;
 import com.zy.recursion.util.ConnectLinuxCommand;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import com.zy.recursion.entity.returnMessage;
@@ -32,6 +35,8 @@ public class NodeController {
     private deviceService deviceService;
     @Autowired
     private com.zy.recursion.entity.address address;
+
+    private static final Logger logger = LoggerFactory.getLogger(NodeController.class);
 
 
 
@@ -112,12 +117,27 @@ public class NodeController {
                     String ip = o.getDeviceIp();
                     String name = o.getDeviceUserName();
                     String pwd = o.getDevicePwd();
+//
+//                    if ("172.171.1.57".equals(ip)){
+//                        ip = "172.171.1.67";
+//                    }
+                    InetAddress inetaddress = InetAddress.getByName(ip);
+                    if (!inetaddress.isReachable(3000)){
+                        m.setNodeStatus(0);
+                        continue;
+                    }
                     String[] cmd = {"df -k", "sar -r 1 1", "sar -u 1 1"};
+                    logger.info("start execute cmd");
                     String[] result = ConnectLinuxCommand.execute(ip, cmd);
+                    logger.info("result is "+result.toString());
                     if (result != null) {
+                        logger.info("result lenth is "+result.length);
                         float disk1 = new ConnectLinuxCommand().disk_utilization(result[0]);
+                        logger.info("ip is: " +ip+"disk1 is: "+ disk1);
                         float memory1 = new ConnectLinuxCommand().memory_utilization(result[1]);
+                        logger.info("ip is: " +ip+"memory1 is: "+ memory1);
                         float cpu1 = new ConnectLinuxCommand().cpu_utilization(result[2]);
+                        logger.info("ip is: " +ip+"cpu1 is: "+ cpu1);
                         if (disk1 > 0.9 | memory1 > 90) {
                             if (o.getDeviceType().equals("缓存")) {
                                 imp++;
@@ -160,9 +180,12 @@ public class NodeController {
         returnMessage returnMessage = new returnMessage();
         if (jsonObject.has("nodeName")) {
             nodeService.deleteNode(jsonObject.getString("nodeName"));
+            List<device> list = deviceService.selectDeviceByNodeName(jsonObject.getString("nodeName"));
             deviceService.deleteDeviceByNodename(jsonObject.getString("nodeName"));
-            List<device> list = deviceService.selectAll1();
-            connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+            //List<device> list = deviceService.selectAll1();
+            //connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+            int type =2;
+            connectLinuxCommand.updateDeviceIPsAndConnc(list,address,type);
             returnMessage.setStatus(0);
             returnMessage.setMessage("删除成功");
             return returnMessage;

@@ -54,13 +54,19 @@ public class Linux {
             jsonObject.put("nodeName",nodeName);
             for (device o : list) {
                 String ip = o.getDeviceIp();
-                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    System.out.println(linuxMessage.toString());
-                    if (linuxMessage.getDeviceIp().equals(ip)){
-                        float disk1 = linuxMessage.getDiskUtilization();
-                        disk = disk1 + disk;
-                    }
+                if (linuxConfig.linuxMessageMap.containsKey(ip)){
+                    linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(ip);
+                    float disk1 = linuxMessage.getDiskUtilization();
+                    disk = disk1 + disk;
                 }
+
+//                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//                    System.out.println(linuxMessage.toString());
+//                    if (linuxMessage.getDeviceIp().equals(ip)){
+//                        float disk1 = linuxMessage.getDiskUtilization();
+//                        disk = disk1 + disk;
+//                    }
+//                }
                 jsonObject.put("disk_utilization", disk / list.size());
                 System.out.println(jsonObject.toString());
                 return jsonObject.toString();
@@ -83,12 +89,18 @@ public class Linux {
             jsonObject2.put("nodeName",nodeName);
             for (device o : list) {
                 String ip = o.getDeviceIp();
-                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    if (ip != null && ip.equals(linuxMessage.getDeviceIp())){
-                        rxkb = rxkb + linuxMessage.getRxkB();
-                        txkb = txkb + linuxMessage.getTxkB();
-                    }
+                if (linuxConfig.linuxMessageMap.containsKey(ip)){
+                    linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(ip);
+                    rxkb = rxkb + linuxMessage.getRxkB();
+                    txkb = txkb + linuxMessage.getTxkB();
                 }
+
+//                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//                    if (ip != null && ip.equals(linuxMessage.getDeviceIp())){
+//                        rxkb = rxkb + linuxMessage.getRxkB();
+//                        txkb = txkb + linuxMessage.getTxkB();
+//                    }
+//                }
                 jsonObject2.put("txkb", txkb);
                 jsonObject2.put("rxkb", rxkb);
                 jsonObject2.put("bandwidth_utilization", (rxkb + txkb) / (address.getBandwidthSet() * 1024));
@@ -112,12 +124,18 @@ public class Linux {
             jsonObject.put("nodeName",nodeName);
             for (device o : list) {
                 String ip = o.getDeviceIp();
-                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    if (linuxMessage.getDeviceIp().equals(ip)){
-                        float memory1 = linuxMessage.getMemoryUtilization();
-                        memory = memory1 + memory;
-                    }
+                if (linuxConfig.linuxMessageMap.containsKey(ip)){
+                    linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(ip);
+                    float memory1 =linuxMessage.getMemoryUtilization();
+                    memory = memory1 + memory;
                 }
+
+//                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//                    if (linuxMessage.getDeviceIp().equals(ip)){
+//                        float memory1 = linuxMessage.getMemoryUtilization();
+//                        memory = memory1 + memory;
+//                    }
+//                }
                 jsonObject.put("memory_utilization", memory / list.size());
                 return jsonObject.toString();
             }
@@ -138,12 +156,18 @@ public class Linux {
             jsonObject.put("nodeName",nodeName);
             for (device o : list) {
                 String ip = o.getDeviceIp();
-                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    if (linuxMessage.getDeviceIp().equals(ip)){
-                        float cpu1 = linuxMessage.getCpuUtilization();
-                        cpu = cpu1 + cpu;
-                    }
+                if (linuxConfig.linuxMessageMap.containsKey(ip)){
+                    linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(ip);
+                    float cpu1 = linuxMessage.getCpuUtilization();
+                    cpu = cpu1 + cpu;
                 }
+
+//                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//                    if (linuxMessage.getDeviceIp().equals(ip)){
+//                        float cpu1 = linuxMessage.getCpuUtilization();
+//                        cpu = cpu1 + cpu;
+//                    }
+//                }
             }
             jsonObject.put("cpu_utilization", cpu / list.size());
             return jsonObject.toString();
@@ -184,38 +208,35 @@ public class Linux {
                 } else if (type.equals("递归")) {
                     recursion++;
                 }
-                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    if (ip != null && ip.equals(linuxMessage.getDeviceIp())){
-                        float disk1 = linuxMessage.getDiskUtilization();
-                        float memory1 = linuxMessage.getMemoryUtilization();
-                        float cpu1 = linuxMessage.getCpuUtilization();
-                        rxkb = rxkb + linuxMessage.getRxkB();
-                        txkb = txkb + linuxMessage.getTxkB();
+                if (linuxConfig.linuxMessageMap.containsKey(ip)) {
+                    linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(ip);
+                    float disk1 = linuxMessage.getDiskUtilization();
+                    float memory1 = linuxMessage.getMemoryUtilization();
+                    float cpu1 = linuxMessage.getCpuUtilization();
+                    rxkb = rxkb + linuxMessage.getRxkB();
+                    txkb = txkb + linuxMessage.getTxkB();
 
-                        if (!address.isReachable(3000)){
-                            if (o.getDeviceType().equals("缓存")) {
-                                serious++;
-                            } else {
-                                serious++;
-                            }
-                            break;
-                        }
-                        if (disk1 > diskThreshold | memory1 > memoryThreshold) {
-                            if (o.getDeviceType().equals("缓存")) {
-                                imp++;
-                            } else {
-                                imp1++;
-                            }
-                        }
-                        if (cpu1 > cpuThreshold) {
-                            if (o.getDeviceType().equals("缓存")) {
-                                common++;
-                            } else {
-                                common1++;
-                            }
+                    if (!address.isReachable(3000)){
+                        if (o.getDeviceType().equals("缓存")) {
+                            serious++;
+                        } else {
+                            serious++;
                         }
                     }
-
+                    if (disk1 > diskThreshold | memory1 > memoryThreshold) {
+                        if (o.getDeviceType().equals("缓存")) {
+                            imp++;
+                        } else {
+                            imp1++;
+                        }
+                    }
+                    if (cpu1 > cpuThreshold) {
+                        if (o.getDeviceType().equals("缓存")) {
+                            common++;
+                        } else {
+                            common1++;
+                        }
+                    }
                 }
             }
             jsonObject2.put("disk_utilization", disk / list.size());
@@ -250,15 +271,24 @@ public class Linux {
         float cpu = 0f;
         String deviceIp = jsonObject1.getString("deviceIp");
         device device = deviceService.selectByIp1(deviceIp);
-        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-            if (linuxMessage.getDeviceIp().equals(deviceIp)){
-                disk = linuxMessage.getDiskUtilization();
-                memory = linuxMessage.getMemoryUtilization();
-                cpu = linuxMessage.getCpuUtilization();
-                rxkb = rxkb + linuxMessage.getRxkB();
-                txkb = txkb + linuxMessage.getTxkB();
-            }
+        if (linuxConfig.linuxMessageMap.containsKey(deviceIp)){
+            linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(deviceIp);
+            disk = linuxMessage.getDiskUtilization();
+            memory = linuxMessage.getMemoryUtilization();
+            cpu = linuxMessage.getCpuUtilization();
+            rxkb = rxkb + linuxMessage.getRxkB();
+            txkb = txkb + linuxMessage.getTxkB();
         }
+
+//        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//            if (linuxMessage.getDeviceIp().equals(deviceIp)){
+//                disk = linuxMessage.getDiskUtilization();
+//                memory = linuxMessage.getMemoryUtilization();
+//                cpu = linuxMessage.getCpuUtilization();
+//                rxkb = rxkb + linuxMessage.getRxkB();
+//                txkb = txkb + linuxMessage.getTxkB();
+//            }
+//        }
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("deviceIp",deviceIp);
             jsonObject.put("disk_utilization", disk);
@@ -276,12 +306,17 @@ public class Linux {
     public String deviceDiskUtilization(@RequestBody(required = false) String requestBody) throws IOException {
         JSONObject jsonObject1 = new JSONObject(requestBody);
         String deviceIp = jsonObject1.getString("deviceIp");
-        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-            if (linuxMessage.getDeviceIp().equals(deviceIp)){
-                jsonObject1.put("disk_utilization",linuxMessage.getDiskUtilization().toString());
-                return jsonObject1.toString();
-            }
+        if (linuxConfig.linuxMessageMap.containsKey(deviceIp)) {
+            linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(deviceIp);
+            jsonObject1.put("disk_utilization",linuxMessage.getDiskUtilization().toString());
+            return jsonObject1.toString();
         }
+//        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//            if (linuxMessage.getDeviceIp().equals(deviceIp)){
+//                jsonObject1.put("disk_utilization",linuxMessage.getDiskUtilization().toString());
+//                return jsonObject1.toString();
+//            }
+//        }
         return null;
     }
 
@@ -291,12 +326,17 @@ public class Linux {
     public String deviceMemoryUtilization(@RequestBody(required = false) String requestBody) throws IOException {
         JSONObject jsonObject1 = new JSONObject(requestBody);
         String deviceIp = jsonObject1.getString("deviceIp");
-        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-            if (linuxMessage.getDeviceIp().equals(deviceIp)){
-                jsonObject1.put("memory_utilization",linuxMessage.getMemoryUtilization().toString());
-                return jsonObject1.toString();
-            }
+        if (linuxConfig.linuxMessageMap.containsKey(deviceIp)) {
+            linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(deviceIp);
+            jsonObject1.put("memory_utilization",linuxMessage.getMemoryUtilization().toString());
+            return jsonObject1.toString();
         }
+//        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//            if (linuxMessage.getDeviceIp().equals(deviceIp)){
+//                jsonObject1.put("memory_utilization",linuxMessage.getMemoryUtilization().toString());
+//                return jsonObject1.toString();
+//            }
+//        }
         return null;
     }
 
@@ -306,12 +346,17 @@ public class Linux {
     public String deviceCpuUtilization(@RequestBody(required = false) String requestBody) throws IOException {
         JSONObject jsonObject1 = new JSONObject(requestBody);
         String deviceIp = jsonObject1.getString("deviceIp");
-        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-            if (linuxMessage.getDeviceIp().equals(deviceIp)){
-                jsonObject1.put("cpu_utilization",linuxMessage.getCpuUtilization().toString());
-                return jsonObject1.toString();
-            }
+        if (linuxConfig.linuxMessageMap.containsKey(deviceIp)) {
+            linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(deviceIp);
+            jsonObject1.put("cpu_utilization",linuxMessage.getCpuUtilization().toString());
+            return jsonObject1.toString();
         }
+//        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//            if (linuxMessage.getDeviceIp().equals(deviceIp)){
+//                jsonObject1.put("cpu_utilization",linuxMessage.getCpuUtilization().toString());
+//                return jsonObject1.toString();
+//            }
+//        }
         return null;
     }
 
@@ -323,17 +368,28 @@ public class Linux {
     public String deviceFlow(@RequestBody(required = false) String requestBody) throws IOException {
         JSONObject jsonObject1 = new JSONObject(requestBody);
         String deviceIp = jsonObject1.getString("deviceIp");
-        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-            if (linuxMessage.getDeviceIp().equals(deviceIp)){
-                JSONObject jsonObject = new JSONObject();
-                float rxkb = linuxMessage.getRxkB();
-                float txkb = linuxMessage.getTxkB();
-                jsonObject.put("rxkb", rxkb);
-                jsonObject.put("txkb", txkb);
-                jsonObject.put("bandwidth_utilization", (rxkb + txkb) / (address.getBandwidthSet() * 1024));
-                return jsonObject.toString();
-            }
+        if (linuxConfig.linuxMessageMap.containsKey(deviceIp)) {
+            linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(deviceIp);
+            JSONObject jsonObject = new JSONObject();
+            float rxkb = linuxMessage.getRxkB();
+            float txkb = linuxMessage.getTxkB();
+            jsonObject.put("rxkb", rxkb);
+            jsonObject.put("txkb", txkb);
+            jsonObject.put("bandwidth_utilization", (rxkb + txkb) / (address.getBandwidthSet() * 1024));
+            return jsonObject.toString();
         }
+
+//        for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
+//            if (linuxMessage.getDeviceIp().equals(deviceIp)){
+//                JSONObject jsonObject = new JSONObject();
+//                float rxkb = linuxMessage.getRxkB();
+//                float txkb = linuxMessage.getTxkB();
+//                jsonObject.put("rxkb", rxkb);
+//                jsonObject.put("txkb", txkb);
+//                jsonObject.put("bandwidth_utilization", (rxkb + txkb) / (address.getBandwidthSet() * 1024));
+//                return jsonObject.toString();
+//            }
+//        }
         return null;
     }
 
@@ -355,19 +411,19 @@ public class Linux {
                 String type = o.getDeviceType();
                 List list2 = new ArrayList();
                 InetAddress address = InetAddress.getByName(ip);
-                for (linuxMessage linuxMessage:linuxConfig.linuxMessages){
-                    if (ip != null && ip.equals(linuxMessage.getDeviceIp())){
-                        float disk1 = linuxMessage.getDiskUtilization();
-                        float memory1 = linuxMessage.getMemoryUtilization();
-                        float cpu1 = linuxMessage.getCpuUtilization();
-                        disk = disk1 + disk;
-                        memory = memory1 + memory;
-                        cpu = cpu1 + cpu;
-                        if (!address.isReachable(3000)){
-                            list2.add("服务器连接失败");
-                            jsonObject3.put("status1","严重");
-                            break;
-                        }
+                if (linuxConfig.linuxMessageMap.containsKey(ip)) {
+                    linuxMessage linuxMessage = linuxConfig.linuxMessageMap.get(ip);
+                    float disk1 = linuxMessage.getDiskUtilization();
+                    float memory1 = linuxMessage.getMemoryUtilization();
+                    float cpu1 = linuxMessage.getCpuUtilization();
+                    disk = disk1 + disk;
+                    memory = memory1 + memory;
+                    cpu = cpu1 + cpu;
+                    if (!address.isReachable(3000)){
+                        list2.add("服务器连接失败");
+                        jsonObject3.put("status1","严重");
+                    }
+                    else{
                         if (cpu1 > cpuThreshold) {
                             list2.add("CPU利用率过高");
                             jsonObject3.put("status1","一般");
@@ -385,6 +441,7 @@ public class Linux {
                             jsonObject3.put("status1","正常");
                         }
                     }
+
                 }
                 jsonObject3.put("deviceIp",ip);
                 jsonObject3.put("type",type);

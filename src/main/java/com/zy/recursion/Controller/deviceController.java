@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import com.zy.recursion.util.ConnectLinuxCommand;
 
@@ -55,8 +56,12 @@ public class deviceController {
                             device.setDeviceUserName(jsonObject.getString("deviceUserName"));
                             device.setDevicePwd(jsonObject.getString("devicePwd"));
                             deviceService.addDevice(device);
-                            List<device> list = deviceService.selectAll1();
-                            connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+                            //List<device> list = deviceService.selectAll1();
+                            List<device> list = new ArrayList<>();
+                            list.add(device);
+                            //connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+                            int type =0;
+                            connectLinuxCommand.updateDeviceIPsAndConnc(list,address,type);
                             node = nodeService.selectNodeByNodename(jsonObject.getString("nodeName"));
                             node.setDeviceCount(node.getDeviceCount() + 1);
                             nodeService.updateNode(node);
@@ -134,15 +139,20 @@ public class deviceController {
         node node = new node();
         if (jsonObject.has("nodeName") && jsonObject.has("deviceIp")) {
             if (!jsonObject.getString("nodeName").equals("") && !jsonObject.getString("deviceIp").equals("")) {
-                System.out.println(jsonObject.getString("deviceIp"));
                 deviceService.deleteDevice(jsonObject.getString("deviceIp"));
                 node = nodeService.selectNodeByNodename(jsonObject.getString("nodeName"));
                 node.setDeviceCount(node.getDeviceCount() - 1);
                 nodeService.updateNode(node);
                 try
                 {
-                    List<device> list = deviceService.selectAll1();
-                    connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+                   // List<device> list = deviceService.selectAll1();
+                    device device = new device();
+                    device.setDeviceIp(jsonObject.getString("deviceIp"));
+                    List<device> list = new ArrayList<device>();
+                    list.add(device);
+                    //type=2表示删除
+                    int type = 2;
+                    connectLinuxCommand.updateDeviceIPsAndConnc(list,address,type);
                     Thread.currentThread().sleep(1000);//毫秒
                 }
                 catch(Exception e){
@@ -174,6 +184,8 @@ public class deviceController {
             if (!jsonObject.getString("preDeviceIp").equals("") && !jsonObject.getString("deviceName").equals("") && !jsonObject.getString("newDeviceIp").equals("") && !jsonObject.getString("deviceLocation").equals("") && !jsonObject.getString("deviceType").equals("")) {
                 device = deviceService.selectDeviceByIp(jsonObject.getString("preDeviceIp"));
                 System.out.println(device.getDeviceIp()+device.getDeviceLocation());
+                List<device> list = new ArrayList<>();
+                int type =1;
                 if (!device.getDeviceIp().equals(jsonObject.getString("newDeviceIp"))) {
                     if (deviceService.selectByIp(jsonObject.getString("newDeviceIp"))) {
                         device.setDeviceName(jsonObject.getString("deviceName"));
@@ -181,10 +193,13 @@ public class deviceController {
                         device.setDeviceIp(jsonObject.getString("newDeviceIp"));
                         device.setDeviceType(jsonObject.getString("deviceType"));
                         deviceService.updateDevice(device);
-                        List<device> list = deviceService.selectAll1();
+                        //List<device> list = deviceService.selectAll1();
+
+                        list.add(device);
+
                         try
                         {
-                            connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+                            connectLinuxCommand.updateDeviceIPsAndConnc(list,address,type);
                             Thread.currentThread().sleep(1000);//毫秒
                         }
                         catch(Exception e){
@@ -206,8 +221,9 @@ public class deviceController {
                     deviceService.updateDevice(device);
                     try
                     {
-                        List<device> list = deviceService.selectAll1();
-                        connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+                        //List<device> list = deviceService.selectAll1();
+                        list.add(device);
+                        connectLinuxCommand.updateDeviceIPsAndConnc(list,address,type);
                         Thread.currentThread().sleep(1000);//毫秒
                     }
                     catch(Exception e){

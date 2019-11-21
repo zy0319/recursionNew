@@ -15,7 +15,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.io.*;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import com.zy.recursion.util.httpPost;
 import javax.servlet.http.HttpServletResponse;
 
@@ -63,7 +66,11 @@ public class http {
         String total_time = null;
         String time = null;
         int cacheDeviceCount = 0;
-        for (handleCache handleCache:linuxConfig.handleCaches){
+        Iterator<Map.Entry<String, handleCache>> entries = linuxConfig.handleCachesMap.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry<String, handleCache> entry = entries.next();
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+            handleCache handleCache = entry.getValue();
             if (handleCache.getHandleCache() != null && handleCache.getHandleCache().getString("nodeName").equals(jsonObject.getString("nodeName"))){
                 JSONObject jsonObject1 = handleCache.getHandleCache();
                 if (jsonObject1.getString("deviceType").equals("缓存")){
@@ -91,6 +98,35 @@ public class http {
                 }
             }
         }
+
+//        for (handleCache handleCache:linuxConfig.handleCaches){
+//            if (handleCache.getHandleCache() != null && handleCache.getHandleCache().getString("nodeName").equals(jsonObject.getString("nodeName"))){
+//                JSONObject jsonObject1 = handleCache.getHandleCache();
+//                if (jsonObject1.getString("deviceType").equals("缓存")){
+//                    cacheDeviceCount++;
+//                    time = jsonObject1.getString("TIME");
+//                    receive = receive+jsonObject1.getInt("RECEIVE");
+//                    drop = drop+jsonObject1.getInt("DROP");
+//                    reply = reply+jsonObject1.getInt("REPLY");
+//                    avg_rep = avg_rep+jsonObject1.getInt("AVG_REP_TIME");
+//                    success = success+jsonObject1.getInt("SUCCESS");
+//                    other = other+jsonObject1.getInt("OTHER");
+//                    recur = recur+jsonObject1.getInt("RECUR");
+//                    avg_recur = avg_recur+jsonObject1.getInt("AVG_RECUR_TIME");
+//                    success_rate = success_rate+jsonObject1.getFloat("SUCCESS_RATE");
+//                    hit_all = hit_all + jsonObject1.getInt("HIT_ALL");
+//                    hit_rate = hit_rate+jsonObject1.getFloat("HIT_RATE");
+//                    recur_success = recur_success+jsonObject1.getFloat("RECUR_SUCCESS");
+//                    all_receive = all_receive+jsonObject1.getFloat("ALL_RECEIVE");
+//                    total_time = jsonObject1.getString("total_time");
+//                    handle = handle+jsonObject1.getInt("HANDLE");
+//                    dns = dns+jsonObject1.getInt("DNS");
+//                    oid = oid+jsonObject1.getInt("OID");
+//                    ecode = ecode+jsonObject1.getInt("ECODE");
+//                    gs1 = gs1+jsonObject1.getInt("GS1");
+//                }
+//            }
+//        }
         JSONObject jsonObject2 = new JSONObject();
         if (cacheDeviceCount != 0) {
             jsonObject2.put("AVG_REP_TIME", avg_rep / cacheDeviceCount);
@@ -129,12 +165,18 @@ public class http {
     @PostMapping(value = "/sendPostDataByJson1",produces = {"text/html;charset=UTF-8"})
     public String sendPostDataByJson1(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException {
         JSONObject jsonObject = new JSONObject(requestBody);
-        for (handleCache handleCache:linuxConfig.handleCaches){
-            if (handleCache.getHandleCache().getString("deviceIp").equals(jsonObject.getString("ip"))){
-                String logCache = handleCache.getHandleCache().toString();
-                return logCache;
-            }
+        if (linuxConfig.handleCachesMap.containsKey(jsonObject.getString("ip"))){
+            handleCache handleCache = linuxConfig.handleCachesMap.get(jsonObject.getString("ip"));
+            String logCache = handleCache.getHandleCache().toString();
+            return logCache;
         }
+
+//        for (handleCache handleCache:linuxConfig.handleCaches){
+//            if (handleCache.getHandleCache().getString("deviceIp").equals(jsonObject.getString("ip"))){
+//                String logCache = handleCache.getHandleCache().toString();
+//                return logCache;
+//            }
+//        }
         return null;
     }
 

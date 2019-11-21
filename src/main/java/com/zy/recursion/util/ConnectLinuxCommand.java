@@ -2,19 +2,23 @@ package com.zy.recursion.util;
 
 import java.io.*;
 import java.net.ConnectException;
+import java.net.InetAddress;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 import ch.ethz.ssh2.Connection;
 import ch.ethz.ssh2.Session;
 import ch.ethz.ssh2.StreamGobbler;
+import com.zy.recursion.dao.deviceDao;
 import com.zy.recursion.entity.device;
 import com.zy.recursion.entity.ipLimit;
 import com.zy.recursion.entity.returnMessage;
 import com.zy.recursion.entity.sysRecord;
 import com.zy.recursion.config.linuxConfig;
 import com.zy.recursion.entity.*;
+import com.zy.recursion.service.device.deviceService;
+import com.zy.recursion.service.device.impl.deviceServiceImpl;
 import io.micrometer.core.instrument.util.StringEscapeUtils;
 import io.micrometer.core.instrument.util.StringUtils;
 import org.slf4j.Logger;
@@ -23,23 +27,33 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+
 @Service
 public class ConnectLinuxCommand {
 
 
     private static final Logger logger = LoggerFactory.getLogger(ConnectLinuxCommand.class);
-    private static String[] deviceIps;
-    private static Connection[] connections;
+//    private static String[] deviceIps;
+//    private static Connection[] connections;
+    private static Map<String,Connection> deviceConncMap = new ConcurrentHashMap<String, Connection>();
+    private static List<deviceConn> deviceConnList = new LinkedList<>();
     private static Session session;
     private static String DEFAULTCHARTSET = "UTF-8";
 
     @Autowired
-    com.zy.recursion.service.device.deviceService deviceService;
+    com.zy.recursion.service.device.deviceService nonStaticDeviceService;
 
     @Autowired
     com.zy.recursion.entity.address address;
 
+    @Autowired
+    static deviceService deviceService;
 
+    @PostConstruct
+    public void init(){
+        deviceService = nonStaticDeviceService;
+    }
 
 
     public static Boolean login(String ip, String name, String password) throws IOException {
@@ -78,9 +92,9 @@ public class ConnectLinuxCommand {
 
     public static void login1(List<device> list) throws IOException {
 //        List<device> list = testUtils.testUtils.deviceService.selectAll1();
-        connections = new Connection[list.size()];
-        deviceIps = new String[list.size()];
-        int n = 0;
+//        connections = new Connection[list.size()];
+//        deviceIps = new String[list.size()];
+//        int n = 0;
         for (device device:list) {
             String deviceIp = device.getDeviceIp();
             boolean flag = false;
@@ -102,15 +116,16 @@ public class ConnectLinuxCommand {
             try {
                 flag = conn.authenticateWithPassword(device.getDeviceUserName(),device.getDevicePwd());// 认证
                 if (flag) {
-                    connections[n] = conn;
-                    deviceIps[n] = deviceIp;
+//                    connections[n] = conn;
+//                    deviceIps[n] = deviceIp;
+                    deviceConncMap.put(deviceIp,conn);
                     logger.info("认证成功！");
-                    n++;
+//                    n++;
 //                conn.close();
                 } else {
                     logger.info("认证失败！");
                     conn.close();
-                    n++;
+//                    n++;
                 }
 //                return conn;
             } catch (IllegalStateException e) {
@@ -120,20 +135,20 @@ public class ConnectLinuxCommand {
     }
 
     public static String[] execute(String ip,String[] cmd) throws IOException {
+
         String[] result = new String[cmd.length];
-        int m = 0;
-        for (int i = 0; i < deviceIps.length; i++) {
-            if (ip.equals(deviceIps[i])){
-                m=i;
-                break;
-            }
-        }
-//        Connection connection = login1(ip, name, pwd);
-        if (connections[m] != null) {
+        logger.info("into execute method");
+        //if (deviceConncMap.containsKey(ip)){
+            logger.info("ip is equal");
+
+            //Connection connection = deviceConncMap.get(ip);
+            Connection connection = checkConnction(ip);
             try {
                 for (int i = 0; i < cmd.length; i++) {
                     Session session = null;
-                    session = connections[m].openSession();
+                    //checkConnction(ip);
+                    session = connection.openSession();
+                    logger.info("start session");
 //                    session.
                     session.execCommand(cmd[i]);// 执行命令
                     result[i] = processStdout(session.getStdout(), DEFAULTCHARTSET);
@@ -146,11 +161,51 @@ public class ConnectLinuxCommand {
 //                conn.close();
 //                assert session != null;
             } catch (IOException e) {
+                logger.error("execute method have exception,ip is"+ip);
+                refreshExceptionDeviceConnction(ip);
                 e.printStackTrace();
+            }finally {
+                if (session != null){
+                    session.close();
+                }
+                return result;
             }
-            return result;
+           // return result;
+        //}
+        //return null;
+    }
+
+    /*
+
+     */
+    public static Connection checkConnction(String ip){
+
+        device device = deviceService.selectDeviceByIp(ip);
+        Connection connection= null;
+        boolean flag = false;
+        try{
+            if (deviceConncMap.containsKey(ip)){
+                connection = deviceConncMap.get(ip);
+            }
+            if (connection != null){
+                flag =connection.isAuthenticationComplete();
+                logger.info("ip is :"+ip+"flag is :"+flag);
+            }
+             if (connection == null || flag == false){
+                 createConnctionByIp(device);
+                 connection = deviceConncMap.get(ip);
+             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return null;
+        return connection;
+    }
+
+    public static void refreshExceptionDeviceConnction(String ip){
+        logger.error("ip: " +ip +"连接出错，重新建立连接并放入缓存中");
+        device device = deviceService.selectDeviceByIp(ip);
+        createConnctionByIp(device);
     }
 
     /**
@@ -308,6 +363,9 @@ public class ConnectLinuxCommand {
                     cacheDeviceCount++;
                     String[] cmd = {"tail -2 " + address};
                     String[] result = ConnectLinuxCommand.execute(o.getDeviceIp(), cmd);
+                    if (result == null){
+                        return null;
+                    }
                     BufferedReader br2 = new BufferedReader(new StringReader(result[0]));
                     String line2;
                     while ((line2 = br2.readLine()) != null) {
@@ -466,6 +524,9 @@ public class ConnectLinuxCommand {
         String time = null;
         String[] cmd = {"tail -2 " + address};
         String[] result = ConnectLinuxCommand.execute(o.getDeviceIp(), cmd);
+        if (result == null){
+            return null;
+        }
         BufferedReader br2 = new BufferedReader(new StringReader(result[0]));
         String line2 = null;
         while ((line2 = br2.readLine()) != null) {
@@ -596,6 +657,11 @@ public class ConnectLinuxCommand {
 
         String[] cmd = {"dig " + "@" + "172.171.1.80" + " " + prefix};
         String[] result = ConnectLinuxCommand.execute(device.getDeviceIp(), cmd);
+        if (result == null){
+            returnMessage.setStatus(1);
+            returnMessage.setMessage("解析失败");
+            return returnMessage;
+        }
         Stack stack = new Stack();
         JSONObject jsonObject = new JSONObject();
         BufferedReader br2 = new BufferedReader(new StringReader(result[0]));
@@ -632,6 +698,11 @@ public class ConnectLinuxCommand {
         returnMessage returnMessage = new returnMessage();
         String[] cmd = {"dig " + "@" + "172.171.1.80" + " " + prefix + " NAPTR"};
         String[] result = ConnectLinuxCommand.execute(device.getDeviceIp(), cmd);
+        if (result == null){
+            returnMessage.setStatus(1);
+            returnMessage.setMessage("解析失败");
+            return returnMessage;
+        }
         Stack stack = new Stack();
         JSONObject jsonObject = new JSONObject();
         BufferedReader br2 = new BufferedReader(new StringReader(result[0]));
@@ -664,10 +735,14 @@ public class ConnectLinuxCommand {
 
     public static List<ipLimit> readFile(String filePath,String deviceIp) throws IOException {
         String[] cmd = {"cat " + filePath};
+        List<ipLimit> ipLimits =new ArrayList<>();
         String[] result = ConnectLinuxCommand.execute(deviceIp, cmd);
+        if (result == null){
+            return ipLimits;
+        }
         BufferedReader bufferedReader = new BufferedReader(new StringReader(result[0]));
         String str =null;
-        List<ipLimit> ipLimits =new ArrayList<>();
+
         while(null !=(str=bufferedReader.readLine())) {
             if (!String.valueOf(str.charAt(0)).equals("#")){
                 ipLimit ipLimit = new ipLimit();
@@ -684,10 +759,14 @@ public class ConnectLinuxCommand {
 
     public static List<sysRecord> readFile1(String filePath, String deviceIp) throws IOException {
         String[] cmd = {"cat " + filePath};
+        List<sysRecord> sysRecords =new ArrayList<>();
         String[] result = ConnectLinuxCommand.execute(deviceIp, cmd);
+        if (result == null){
+            return sysRecords;
+        }
         BufferedReader bufferedReader = new BufferedReader(new StringReader(result[0]));
         String str =null;
-        List<sysRecord> sysRecords =new ArrayList<>();
+
         while(null !=(str=bufferedReader.readLine())) {
             if (!String.valueOf(str.charAt(0)).equals("#")){
                sysRecord sysRecord = new sysRecord();
@@ -740,10 +819,14 @@ public class ConnectLinuxCommand {
 
     public static Stack sendSet(String filePath,String deviceIP) throws IOException {
         String[] cmd = {"/home/fnii/handle_cache/bin/cmdsh3 127.0.0.1 15000 2 \"reload ip_limit\""};
+        Stack stack = new Stack();
         String[] result = ConnectLinuxCommand.execute(deviceIP, cmd);
+        if (result == null){
+            return stack;
+        }
         BufferedReader bufferedReader = new BufferedReader(new StringReader(result[0]));
         String line2 = null;
-        Stack stack = new Stack();
+
         while ((line2 = bufferedReader.readLine()) != null) {
             stack.push(line2);
         }
@@ -753,10 +836,14 @@ public class ConnectLinuxCommand {
 
     public static Stack sendSet1(String filePath,String deviceIP) throws IOException {
         String[] cmd = {"/home/fnii/handle_cache/bin/cmdsh3 127.0.0.1 15000 2 \"reload sys_record\""};
+        Stack stack = new Stack();
         String[] result = ConnectLinuxCommand.execute(deviceIP, cmd);
+        if (result == null){
+            return stack;
+        }
         BufferedReader bufferedReader = new BufferedReader(new StringReader(result[0]));
         String line2 = null;
-        Stack stack = new Stack();
+
         while ((line2 = bufferedReader.readLine()) != null) {
             stack.push(line2);
         }
@@ -764,28 +851,61 @@ public class ConnectLinuxCommand {
         return stack;
     }
 
-    public  void updateDeviceIPsAndConnc(List<device> list,address address) throws IOException {
-        linuxConfig  linuxConfigService = new linuxConfig();
-        deviceIps=null;
-        connections=null;
-        linuxConfig.handleCaches = new handleCache[list.size()];
-        linuxConfig.linuxMessages = new linuxMessage[list.size()];
-        logger.info("deviceIps is "+deviceIps+"connections is "+connections);
-        login1(list);
-        logger.info("start linuxMessage time is "+System.currentTimeMillis());
-        LinuxMessage(list,address);
-        logger.info("end linuxMessage time is "+System.currentTimeMillis());
-        logger.info("start LinuxHandleCache time is "+System.currentTimeMillis());
-        LinuxHandleCache(list,address);
-        logger.info("end LinuxHandleCache time is "+System.currentTimeMillis());
-        logger.info("update deviceIPs and connection success");
-        for(int i =0 ;i<=deviceIps.length-1;i++){
-            logger.info("device ip"+i+"is"+deviceIps[i]);
+    //type表示的是增删改，0表示新增，1表示修改，2表示删除
+    public  void updateDeviceIPsAndConnc(List<device> list,address address,int type) throws IOException {
+        if (list == null){
+            return;
         }
-        logger.info("connections is "+connections.length);
-        logger.info("handleCaches is "+linuxConfig.handleCaches.length);
-        logger.info("linuxMessages is "+linuxConfig.linuxMessages.length);
-        logger.info("deviceIps is "+deviceIps+"connections is "+connections);
+        for (device device:list){
+
+            String deviceIp = device.getDeviceIp();
+            if(type == 0 || type == 1){
+                List<device> listTemp = new ArrayList<>();
+                listTemp.add(device);
+                createConnctionByIp(device);
+                LinuxMessage(listTemp,address);
+                LinuxHandleCache(listTemp,address);
+            }
+            else if(type == 2){
+                linuxConfig.linuxMessageMap.remove(deviceIp);
+                linuxConfig.handleCachesMap.remove(deviceIp);
+            }
+        }
+
+
+        logger.info("update deviceip and connction end");
+    }
+
+
+   //根据deviceIp，新增connction，并将connction加入 deviceConncMap中
+    public static void createConnctionByIp(device device){
+        long waitTime = System.currentTimeMillis() + 2000;
+        Connection conn = new Connection(device.getDeviceIp());
+        int  connectTimes=0;
+        boolean flag = false;
+        do {
+            try {
+                conn.connect();// 连
+                break;
+            } catch (ConnectException e) {
+
+            } catch (IOException e) {
+                connectTimes++;
+            }
+        } while (System.currentTimeMillis() < waitTime && 20 <= connectTimes);
+        try {
+            flag = conn.authenticateWithPassword(device.getDeviceUserName(),device.getDevicePwd());// 认证
+            if (flag) {
+                deviceConncMap.put(device.getDeviceIp(),conn);
+                logger.info("认证成功！deviceIp和connction放入缓存中");
+            } else {
+                logger.info("认证失败！存入缓存失败");
+                conn.close();
+            }
+        } catch (IllegalStateException | IOException e) {
+            logger.info("添加缓存异常发生");
+        }
+
     }
 
     public void LinuxMessage(List<device> list,address address) throws IOException {
@@ -793,6 +913,9 @@ public class ConnectLinuxCommand {
         for (device device:list){
             String[] cmd = new String[]{"df -k","sar -n DEV 1 1","sar -r 1 1","sar -u 1 1"};//硬盘、流量、内存、cpu
             String[] result = ConnectLinuxCommand.execute(device.getDeviceIp(),cmd);
+            if (result == null){
+                return;
+            }
             Float diskUtilization = new ConnectLinuxCommand().disk_utilization(result[0]);
             JSONObject flow = new ConnectLinuxCommand().networkCard(result[1],address.getNetworkCard());
             Float memoryUtilization = new ConnectLinuxCommand().memory_utilization(result[2]);
@@ -811,8 +934,10 @@ public class ConnectLinuxCommand {
             linuxMessage.setDiskUtilization(diskUtilization);
             linuxMessage.setMemoryUtilization(memoryUtilization);
             linuxMessage.setDeviceIp(device.getDeviceIp());
-            linuxConfig.linuxMessages[n] = linuxMessage;
-            n = n+1;
+
+//            linuxConfig.linuxMessages[n] = linuxMessage;
+            linuxConfig.linuxMessageMap.put(device.getDeviceIp(),linuxMessage);
+//            n = n+1;
         }
     }
 
@@ -823,8 +948,8 @@ public class ConnectLinuxCommand {
             System.out.println(result);
             handleCache handleCache = new handleCache();
             handleCache.setHandleCache(result);
-            linuxConfig.handleCaches[n] = handleCache;
-            n = n+1;
+            linuxConfig.handleCachesMap.put(device.getDeviceIp(),handleCache);
+
         }
     }
 
