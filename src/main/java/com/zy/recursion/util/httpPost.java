@@ -84,7 +84,12 @@ public class httpPost {
 
     public static returnMessage testSendGetDataByJson(JSONObject jsonObject) throws ClientProtocolException, IOException, URISyntaxException {
         String ip = jsonObject.getString("ip");
-        String URL = "http://"+ip+":8080/api/handles/";
+        int port = 8080;
+        if (jsonObject.has("flag")){
+            ip ="38.100.138.166";
+            port = 80;
+        }
+        String URL = "http://"+ip+":"+port+"/api/handles/";
         String prefix = jsonObject.getString("prefix");
         String getUrl = URL+prefix;
         returnMessage returnMessage = new returnMessage();

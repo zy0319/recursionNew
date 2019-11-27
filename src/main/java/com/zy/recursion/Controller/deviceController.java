@@ -63,8 +63,17 @@ public class deviceController {
                             int type =0;
                             connectLinuxCommand.updateDeviceIPsAndConnc(list,address,type);
                             node = nodeService.selectNodeByNodename(jsonObject.getString("nodeName"));
-                            node.setDeviceCount(node.getDeviceCount() + 1);
+                            List<device> deviceList = deviceService.selectDeviceByNodeName(jsonObject.getString("nodeName"));
+                            if (deviceList != null){
+                                node.setDeviceCount(deviceList.size());
+
+                            }
+                            else {
+                                node.setDeviceCount(0);
+                            }
                             nodeService.updateNode(node);
+//                            node.setDeviceCount(node.getDeviceCount() + 1);
+//                            nodeService.updateNode(node);
                             returnMessage.setStatus(0);
                             returnMessage.setMessage("注册成功");
                             return returnMessage;
@@ -141,7 +150,18 @@ public class deviceController {
             if (!jsonObject.getString("nodeName").equals("") && !jsonObject.getString("deviceIp").equals("")) {
                 deviceService.deleteDevice(jsonObject.getString("deviceIp"));
                 node = nodeService.selectNodeByNodename(jsonObject.getString("nodeName"));
-                node.setDeviceCount(node.getDeviceCount() - 1);
+                if (node == null){
+                    returnMessage.setStatus(1);
+                    returnMessage.setMessage("node节点不存在");
+                    return returnMessage;
+                }
+                List<device> deviceList = deviceService.selectDeviceByNodeName(jsonObject.getString("nodeName"));
+                if (deviceList != null){
+                    node.setDeviceCount(deviceList.size());
+                }
+                else{
+                    node.setDeviceCount(0);
+                }
                 nodeService.updateNode(node);
                 try
                 {

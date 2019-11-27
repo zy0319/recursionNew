@@ -654,8 +654,7 @@ public class ConnectLinuxCommand {
 
     public returnMessage dns(device device, String ip, String prefix) throws IOException {
         returnMessage returnMessage = new returnMessage();
-
-        String[] cmd = {"dig " + "@" + "172.171.1.80" + " " + prefix};
+        String[] cmd = {"dig " + "@" + ip + " " + prefix};
         String[] result = ConnectLinuxCommand.execute(device.getDeviceIp(), cmd);
         if (result == null){
             returnMessage.setStatus(1);
@@ -666,37 +665,68 @@ public class ConnectLinuxCommand {
         JSONObject jsonObject = new JSONObject();
         BufferedReader br2 = new BufferedReader(new StringReader(result[0]));
         String line2 = null;
-        while (!(line2 = br2.readLine()).equals(";; AUTHORITY SECTION:")) {
-            stack.push(line2);
-        }
-        br2.close();
-        stack.pop();
-        String m = stack.pop().toString();
-        String a = "";
-        System.out.println(a);
-        if (!m.contains(";")){
-            stack.push(m);
-            List list = new ArrayList();
-            while (!(a = stack.pop().toString()).equals(";; ANSWER SECTION:")) {
-                String b = a.split("\\s+")[3];
-                if (b.equals("A")) {
-                    list.add(a.split("\\s+")[4]);
-                }
+        boolean isAnswer = false;
+        boolean isWrong = true;
+        List list = new ArrayList();
+        while ((line2 = br2.readLine()) != null){
+            if (";; ANSWER SECTION:".equals(line2)){
+                isAnswer = true;
+                continue;
             }
-            returnMessage.setStatus(0);
-            returnMessage.setMessage(list.toString());
-            return returnMessage;
-        }else {
+            if (isAnswer ){
+                if ("".equals(line2)){
+                    isAnswer = false;
+                    break;
+                }else if (isAnswer && "A".equals( line2.toString().split("\\s+")[3])){
+                    isWrong = false;
+                    list.add(line2.toString().split("\\s+")[4]);
+                }
+
+            }
+        }
+        if (isWrong){
             returnMessage.setStatus(1);
             returnMessage.setMessage("解析失败");
             return returnMessage;
         }
+        else {
+            returnMessage.setStatus(0);
+            returnMessage.setMessage(list.toString());
+            return returnMessage;
+        }
+
+
+//        while (!(line2 = br2.readLine()).equals(";; AUTHORITY SECTION:")) {
+//            stack.push(line2);
+//        }
+//        br2.close();
+//        stack.pop();
+//        String m = stack.pop().toString();
+//        String a = "";
+//        System.out.println(a);
+//        if (!m.contains(";")){
+//            stack.push(m);
+//            List list = new ArrayList();
+//            while (!(a = stack.pop().toString()).equals(";; ANSWER SECTION:")) {
+//                String b = a.split("\\s+")[3];
+//                if (b.equals("A")) {
+//                    list.add(a.split("\\s+")[4]);
+//                }
+//            }
+//            returnMessage.setStatus(0);
+//            returnMessage.setMessage(list.toString());
+//            return returnMessage;
+//        }else {
+//            returnMessage.setStatus(1);
+//            returnMessage.setMessage("解析失败");
+//            return returnMessage;
+//        }
     }
 
 
     public returnMessage oid(device device, String ip, String prefix) throws IOException {
         returnMessage returnMessage = new returnMessage();
-        String[] cmd = {"dig " + "@" + "172.171.1.80" + " " + prefix + " NAPTR"};
+        String[] cmd = {"dig " + "@" + ip + " " + prefix + " NAPTR"};
         String[] result = ConnectLinuxCommand.execute(device.getDeviceIp(), cmd);
         if (result == null){
             returnMessage.setStatus(1);
@@ -707,29 +737,60 @@ public class ConnectLinuxCommand {
         JSONObject jsonObject = new JSONObject();
         BufferedReader br2 = new BufferedReader(new StringReader(result[0]));
         String line2 = null;
-        while (!(line2 = br2.readLine()).equals(";; AUTHORITY SECTION:")) {
-            stack.push(line2);
-        }
-        br2.close();
-        stack.pop();
-        String m = stack.pop().toString();
-//        System.out.println(m);
-        if (!m.contains(";")){
-            stack.push(m);
-            String a = "";
-            while (!(a = stack.pop().toString()).equals(";; ANSWER SECTION:")) {
-                String key1 = a.split("\\s+")[7];
-                String key2 = a.split("\\s+")[9];
-                jsonObject.put(key1.substring(1,key1.length()-1),key2.substring(0,key2.length()-1));
+        boolean isAnswer = false;
+        boolean isWrong = true;
+        while ((line2 = br2.readLine()) != null){
+            if (";; ANSWER SECTION:".equals(line2)){
+                isAnswer = true;
+                continue;
             }
+            if (isAnswer ){
+                if ("".equals(line2)){
+                    isAnswer = false;
+                    break;
+                }else {
+                    isWrong = false;
+                    String key1 = line2.split("\\s+")[7];
+                    String key2 = line2.split("\\s+")[9];
+                    jsonObject.put(key1.substring(1,key1.length()-1),key2.substring(0,key2.length()-1));
+                }
+
+            }
+        }
+        if (isWrong){
+            returnMessage.setStatus(1);
+            returnMessage.setMessage("未能查询到相应结果");
+            return returnMessage;
+        }
+        else {
             returnMessage.setStatus(0);
             returnMessage.setMessage(jsonObject.toString());
             return returnMessage;
-        } else {
-            returnMessage.setStatus(1);
-            returnMessage.setMessage("解析失败");
-            return returnMessage;
         }
+
+//        while (!(line2 = br2.readLine()).equals(";; AUTHORITY SECTION:")) {
+//            stack.push(line2);
+//        }
+//        br2.close();
+//        stack.pop();
+//        String m = stack.pop().toString();
+////        System.out.println(m);
+//        if (!m.contains(";")){
+//            stack.push(m);
+//            String a = "";
+//            while (!(a = stack.pop().toString()).equals(";; ANSWER SECTION:")) {
+//                String key1 = a.split("\\s+")[7];
+//                String key2 = a.split("\\s+")[9];
+//                jsonObject.put(key1.substring(1,key1.length()-1),key2.substring(0,key2.length()-1));
+//            }
+//            returnMessage.setStatus(0);
+//            returnMessage.setMessage(jsonObject.toString());
+//            return returnMessage;
+//        } else {
+//            returnMessage.setStatus(1);
+//            returnMessage.setMessage("解析失败");
+//            return returnMessage;
+//        }
     }
 
 

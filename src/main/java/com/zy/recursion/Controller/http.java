@@ -99,34 +99,6 @@ public class http {
             }
         }
 
-//        for (handleCache handleCache:linuxConfig.handleCaches){
-//            if (handleCache.getHandleCache() != null && handleCache.getHandleCache().getString("nodeName").equals(jsonObject.getString("nodeName"))){
-//                JSONObject jsonObject1 = handleCache.getHandleCache();
-//                if (jsonObject1.getString("deviceType").equals("缓存")){
-//                    cacheDeviceCount++;
-//                    time = jsonObject1.getString("TIME");
-//                    receive = receive+jsonObject1.getInt("RECEIVE");
-//                    drop = drop+jsonObject1.getInt("DROP");
-//                    reply = reply+jsonObject1.getInt("REPLY");
-//                    avg_rep = avg_rep+jsonObject1.getInt("AVG_REP_TIME");
-//                    success = success+jsonObject1.getInt("SUCCESS");
-//                    other = other+jsonObject1.getInt("OTHER");
-//                    recur = recur+jsonObject1.getInt("RECUR");
-//                    avg_recur = avg_recur+jsonObject1.getInt("AVG_RECUR_TIME");
-//                    success_rate = success_rate+jsonObject1.getFloat("SUCCESS_RATE");
-//                    hit_all = hit_all + jsonObject1.getInt("HIT_ALL");
-//                    hit_rate = hit_rate+jsonObject1.getFloat("HIT_RATE");
-//                    recur_success = recur_success+jsonObject1.getFloat("RECUR_SUCCESS");
-//                    all_receive = all_receive+jsonObject1.getFloat("ALL_RECEIVE");
-//                    total_time = jsonObject1.getString("total_time");
-//                    handle = handle+jsonObject1.getInt("HANDLE");
-//                    dns = dns+jsonObject1.getInt("DNS");
-//                    oid = oid+jsonObject1.getInt("OID");
-//                    ecode = ecode+jsonObject1.getInt("ECODE");
-//                    gs1 = gs1+jsonObject1.getInt("GS1");
-//                }
-//            }
-//        }
         JSONObject jsonObject2 = new JSONObject();
         if (cacheDeviceCount != 0) {
             jsonObject2.put("AVG_REP_TIME", avg_rep / cacheDeviceCount);
@@ -171,12 +143,6 @@ public class http {
             return logCache;
         }
 
-//        for (handleCache handleCache:linuxConfig.handleCaches){
-//            if (handleCache.getHandleCache().getString("deviceIp").equals(jsonObject.getString("ip"))){
-//                String logCache = handleCache.getHandleCache().toString();
-//                return logCache;
-//            }
-//        }
         return null;
     }
 
@@ -188,22 +154,32 @@ public class http {
         String prefixType = jsonObject.getString("prefixType");
         String ip =jsonObject.getString("ip");
         String prefix = jsonObject.getString("prefix");
+        boolean isSingular = false;
+        if (jsonObject.has("flag")){
+             isSingular = true;
+        }
         if (prefixType.equals("Handle")){
-            if (ip.equals("39.107.238.25") || ip.equals("172.171.1.80") || ip.equals("172.171.1.79")){
+            if (ip != null){
                 return httpPost.testSendGetDataByJson(jsonObject);
             }else{
                 return null;
             }
         }else if (prefixType.equals("DNS")){
-            if (ip.equals("172.171.1.80")){
+            if (ip != null){
                 device device = deviceService.selectByIp1(ip);
+                if (isSingular){
+                    ip = "8.8.8.8";
+                }
                 return new ConnectLinuxCommand().dns(device,ip,prefix);
             }else{
                 return null;
             }
         }else if (prefixType.equals("Oid") || prefixType.equals("GS1") || prefixType.equals("Ecode")){
-            if (ip.equals("172.171.1.80")){
+            if (ip != null){
                 device device = deviceService.selectByIp1(ip);
+                if (isSingular){
+                    ip = "8.8.8.8";
+                }
                 return new ConnectLinuxCommand().oid(device,ip,prefix);
             }else{
                 return null;
