@@ -8,6 +8,7 @@ public class node implements Serializable {
     private Integer deviceCount;
     private Integer nodeStatus;
     private Integer nodeId;
+    private String nodeArea;
 
     public Integer getNodeId() {
         return nodeId;
@@ -47,5 +48,13 @@ public class node implements Serializable {
 
     public void setNodeStatus(Integer nodeStatus) {
         this.nodeStatus = nodeStatus;
+    }
+
+    public String getNodeArea() {
+        return nodeArea;
+    }
+
+    public void setNodeArea(String nodeArea) {
+        this.nodeArea = nodeArea;
     }
 }

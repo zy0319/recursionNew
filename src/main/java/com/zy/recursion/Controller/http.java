@@ -14,7 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.io.*;
+import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+
 import com.zy.recursion.util.httpPost;
 import javax.servlet.http.HttpServletResponse;
 
@@ -62,8 +66,12 @@ public class http {
         String total_time = null;
         String time = null;
         int cacheDeviceCount = 0;
-        for (handleCache handleCache:linuxConfig.handleCaches){
-            if (handleCache.getHandleCache().getString("nodeName").equals(jsonObject.getString("nodeName"))){
+        Iterator<Map.Entry<String, handleCache>> entries = linuxConfig.handleCachesMap.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry<String, handleCache> entry = entries.next();
+            System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+            handleCache handleCache = entry.getValue();
+            if (handleCache.getHandleCache() != null && handleCache.getHandleCache().getString("nodeName").equals(jsonObject.getString("nodeName"))){
                 JSONObject jsonObject1 = handleCache.getHandleCache();
                 if (jsonObject1.getString("deviceType").equals("缓存")){
                     cacheDeviceCount++;
@@ -90,6 +98,7 @@ public class http {
                 }
             }
         }
+
         JSONObject jsonObject2 = new JSONObject();
         if (cacheDeviceCount != 0) {
             jsonObject2.put("AVG_REP_TIME", avg_rep / cacheDeviceCount);
@@ -128,39 +137,49 @@ public class http {
     @PostMapping(value = "/sendPostDataByJson1",produces = {"text/html;charset=UTF-8"})
     public String sendPostDataByJson1(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException {
         JSONObject jsonObject = new JSONObject(requestBody);
-        for (handleCache handleCache:linuxConfig.handleCaches){
-            if (handleCache.getHandleCache().getString("deviceIp").equals(jsonObject.getString("ip"))){
-                String logCache = handleCache.getHandleCache().toString();
-                return logCache;
-            }
+        if (linuxConfig.handleCachesMap.containsKey(jsonObject.getString("ip"))){
+            handleCache handleCache = linuxConfig.handleCachesMap.get(jsonObject.getString("ip"));
+            String logCache = handleCache.getHandleCache().toString();
+            return logCache;
         }
+
         return null;
     }
 
     @annotation.UserLoginToken
     @CrossOrigin
     @PostMapping(value = "/handleResolve")
-    public returnMessage handleResolve(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException {
+    public returnMessage handleResolve(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException, URISyntaxException {
         JSONObject jsonObject = new JSONObject(requestBody);
         String prefixType = jsonObject.getString("prefixType");
         String ip =jsonObject.getString("ip");
         String prefix = jsonObject.getString("prefix");
+        boolean isSingular = false;
+        if (jsonObject.has("flag")){
+             isSingular = true;
+        }
         if (prefixType.equals("Handle")){
-            if (ip.equals("39.107.238.25") || ip.equals("172.171.1.80")){
-                return httpPost.testSendPostDataByJson(jsonObject);
+            if (ip != null){
+                return httpPost.testSendGetDataByJson(jsonObject);
             }else{
                 return null;
             }
         }else if (prefixType.equals("DNS")){
-            if (ip.equals("172.171.1.80")){
+            if (ip != null){
                 device device = deviceService.selectByIp1(ip);
+                if (isSingular){
+                    ip = "8.8.8.8";
+                }
                 return new ConnectLinuxCommand().dns(device,ip,prefix);
             }else{
                 return null;
             }
         }else if (prefixType.equals("Oid") || prefixType.equals("GS1") || prefixType.equals("Ecode")){
-            if (ip.equals("172.171.1.80")){
+            if (ip != null){
                 device device = deviceService.selectByIp1(ip);
+                if (isSingular){
+                    ip = "8.8.8.8";
+                }
                 return new ConnectLinuxCommand().oid(device,ip,prefix);
             }else{
                 return null;

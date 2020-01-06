@@ -5,13 +5,15 @@
         INSERT INTO node (
           nodeName,
           operatorName,
-          deviceCount
+          deviceCount,
+          nodeArea
         )
         VALUES
           (
             #{nodeName},
             #{operatorName},
-            #{deviceCount}
+            #{deviceCount},
+            #{nodeArea}
           )
     </insert>
 
@@ -20,7 +22,8 @@
           a.nodeName,
           a.operatorName,
           a.deviceCount,
-          a.nodeId
+          a.nodeId,
+          a.nodeArea
         FROM
           node AS a
     </select>
@@ -41,6 +44,9 @@
             <if test="deviceCount!=null">
                 deviceCount = #{deviceCount},
             </if>
+            <if test="nodeArea!=null">
+                nodeArea = #{nodeArea},
+            </if>
         </set>
         where nodeId = #{nodeId}
     </update>
@@ -50,7 +56,8 @@
           a.nodeName,
           a.operatorName,
           a.deviceCount,
-          a.nodeId
+          a.nodeId,
+          a.nodeArea
         FROM
           node AS a
         WHERE

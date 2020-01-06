@@ -38,6 +38,11 @@ server:
   #端口号
   port: 8686
 
+threshold:
+  diskThreshold: 0.9
+  memoryThreshold: 90
+  cpuThreshold: 90
+
 logging:
   level.org.springframework.web: DEBUG
   level: info

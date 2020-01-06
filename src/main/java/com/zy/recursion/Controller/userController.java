@@ -1,5 +1,6 @@
 package com.zy.recursion.Controller;
 
+import com.auth0.jwt.algorithms.Algorithm;
 import com.zy.recursion.config.annotation;
 import com.zy.recursion.entity.returnMessage;
 import com.zy.recursion.entity.user;
@@ -9,9 +10,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Base64;
 
 @RestController
 @RequestMapping(value = "/user", method = RequestMethod.GET)
@@ -32,7 +39,7 @@ public class userController {
         JSONObject jsonObject = new JSONObject(requesyBody);
         returnMessage returnMessage = new returnMessage();
         String userName = jsonObject.getString("user");
-        String passwd = jsonObject.getString("passwd");
+        String passwd = new BASE64Encoder().encode(jsonObject.getString("passwd").getBytes());
         //0：超级管理员；1：节点管理员；2：普通用户
         String role = jsonObject.getString("role");
         String nodeName= jsonObject.getString("nodeName");
@@ -74,7 +81,7 @@ public class userController {
         returnMessage returnMessage = new returnMessage();
         String id = jsonObject.getString("id");
         String userName = jsonObject.getString("user");
-        String passwd = jsonObject.getString("passwd");
+        String passwd = new BASE64Encoder().encode(jsonObject.getString("passwd").getBytes());
         //0：超级管理员；1：节点管理员；2：普通用户
         String role = jsonObject.getString("role");
         String nodeName= jsonObject.getString("nodeName");
@@ -144,6 +151,36 @@ public class userController {
             return returnMessage;
         }
 
+    }
+
+    @annotation.UserLoginToken
+    @CrossOrigin
+    @PostMapping(value = "/modfiyCurrentUserPasswd",produces = {"application/json;charset=UTF-8"})
+    public returnMessage modfiyCurrentUserPasswd(@RequestBody(required = false) String requesyBody) throws IOException {
+        returnMessage returnMessage = new returnMessage();
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        user userEntity=(user)request.getAttribute("currentUser");
+        if (userEntity == null){
+            returnMessage.setStatus(1);
+            returnMessage.setMessage("不存在该用户！");
+            return returnMessage;
+        }
+        JSONObject jsonObject = new JSONObject(requesyBody);
+        String oldPasswd = jsonObject.getString("oldPasswd");
+        String oldPasswdDecode = new BASE64Encoder().encode(oldPasswd.getBytes());
+        String newPasswd = jsonObject.getString("newPasswd");
+        String newPasswdDecode = new BASE64Encoder().encode(newPasswd.getBytes());
+        if (userEntity.getPasswd()!= null && userEntity.getPasswd().equals(oldPasswdDecode) ){
+            userEntity.setPasswd(newPasswdDecode);
+            userService.updateUser(userEntity);
+            returnMessage.setStatus(0);
+            returnMessage.setMessage("修改密码成功");
+        }
+        else{
+            returnMessage.setStatus(1);
+            returnMessage.setMessage("原密码输入错误，密码修改失败");
+        }
+        return returnMessage;
     }
 
     @annotation.UserLoginToken

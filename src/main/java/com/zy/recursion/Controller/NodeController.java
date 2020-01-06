@@ -8,9 +8,15 @@ import com.zy.recursion.service.device.deviceService;
 import com.zy.recursion.service.node.nodeService;
 import com.zy.recursion.util.ConnectLinuxCommand;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import com.zy.recursion.entity.returnMessage;
@@ -33,6 +39,8 @@ public class NodeController {
     @Autowired
     private com.zy.recursion.entity.address address;
 
+    private static final Logger logger = LoggerFactory.getLogger(NodeController.class);
+
 
 
     @annotation.UserLoginToken
@@ -41,13 +49,14 @@ public class NodeController {
     public returnMessage addNode(@RequestBody(required = false) String requesyBody) {
         JSONObject jsonObject = new JSONObject(requesyBody);
         returnMessage returnMessage = new returnMessage();
-        if (jsonObject.has("nodeName") && jsonObject.has("operatorName")) {
-            if (!jsonObject.getString("nodeName").equals("") && !jsonObject.getString("operatorName").equals("")) {
+        if (jsonObject.has("nodeName") && jsonObject.has("operatorName") && jsonObject.has("nodeArea")) {
+            if (!jsonObject.getString("nodeName").equals("") && !jsonObject.getString("operatorName").equals("") && !jsonObject.getString("nodeArea").equals("") ) {
                 if (nodeService.selectByNodename(jsonObject.getString("nodeName"))) {
                     node node = new node();
                     node.setNodeName(jsonObject.getString("nodeName"));
                     node.setDeviceCount(0);
                     node.setOperatorName(jsonObject.getString("operatorName"));
+                    node.setNodeArea(jsonObject.getString("nodeArea"));
                     nodeService.addNode(node);
                     returnMessage.setStatus(0);
                     returnMessage.setMessage("注册成功");
@@ -72,7 +81,7 @@ public class NodeController {
     @annotation.UserLoginToken
     @CrossOrigin
     @PostMapping(value = "/selectAll")
-    public List<node> selectAll() {
+    public List<node> selectAll() throws FileNotFoundException {
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         user userEntity=(user)request.getAttribute("currentUser");
         if (userEntity == null){
@@ -88,6 +97,18 @@ public class NodeController {
             node nodeEntity = nodeService.selectNodeByNodename(userEntity.getNodeName());
             list.add(nodeEntity);
         }
+        for (node node :list){
+            List<device> deviceList = deviceService.selectDeviceByNodeName(node.getNodeName());
+            if (deviceList != null && node.getDeviceCount() != deviceList.size()){
+                logger.debug("node表与device表中设备数量不一致，以device表数量为准");
+                node.setDeviceCount(deviceList.size());
+                nodeService.updateNode(node);
+            }
+            else if (deviceList == null){
+                node.setDeviceCount(0);
+                nodeService.updateNode(node);
+            }
+        }
         return list;
     }
 
@@ -96,7 +117,8 @@ public class NodeController {
     @CrossOrigin
     @PostMapping(value = "/selectAllData")
     public List selectAllData() throws IOException {
-        List<node> list = nodeService.selectAll();
+        //List<node> list = nodeService.selectAll();
+        List<node> list = selectAll();
         List list2 = new ArrayList();
         for (node m : list) {
             if (m.getDeviceCount() != 0) {
@@ -111,6 +133,11 @@ public class NodeController {
                     String ip = o.getDeviceIp();
                     String name = o.getDeviceUserName();
                     String pwd = o.getDevicePwd();
+                    InetAddress inetaddress = InetAddress.getByName(ip);
+                    if (!inetaddress.isReachable(3000)){
+                        m.setNodeStatus(0);
+                        continue;
+                    }
                     String[] cmd = {"df -k", "sar -r 1 1", "sar -u 1 1"};
                     String[] result = ConnectLinuxCommand.execute(ip, cmd);
                     if (result != null) {
@@ -159,9 +186,10 @@ public class NodeController {
         returnMessage returnMessage = new returnMessage();
         if (jsonObject.has("nodeName")) {
             nodeService.deleteNode(jsonObject.getString("nodeName"));
+            List<device> list = deviceService.selectDeviceByNodeName(jsonObject.getString("nodeName"));
             deviceService.deleteDeviceByNodename(jsonObject.getString("nodeName"));
-            List<device> list = deviceService.selectAll1();
-            connectLinuxCommand.updateDeviceIPsAndConnc(list,address);
+            int type =2;
+            connectLinuxCommand.updateDeviceIPsAndConnc(list,address,type);
             returnMessage.setStatus(0);
             returnMessage.setMessage("删除成功");
             return returnMessage;
@@ -179,11 +207,12 @@ public class NodeController {
         JSONObject jsonObject = new JSONObject(requesyBody);
         node node = new node();
         returnMessage returnMessage = new returnMessage();
-        if (jsonObject.has("preNodeName") && jsonObject.has("newNodeName") && jsonObject.has("operatorName")) {
-            if (!jsonObject.getString("preNodeName").equals("") && !jsonObject.getString("newNodeName").equals("") && !jsonObject.getString("operatorName").equals("")) {
+        if (jsonObject.has("preNodeName") && jsonObject.has("newNodeName") && jsonObject.has("operatorName") && jsonObject.has("nodeArea")) {
+            if (!jsonObject.getString("preNodeName").equals("") && !jsonObject.getString("newNodeName").equals("") && !jsonObject.getString("operatorName").equals("") && !jsonObject.getString("nodeArea").equals("")) {
                 if (jsonObject.getString("preNodeName").equals(jsonObject.getString("newNodeName"))) {
                     node = nodeService.selectNodeByNodename(jsonObject.getString("preNodeName"));
                     node.setOperatorName(jsonObject.getString("operatorName"));
+                    node.setNodeArea(jsonObject.getString("nodeArea"));
                     nodeService.updateNode(node);
                     returnMessage.setStatus(0);
                     returnMessage.setMessage("success");
@@ -193,6 +222,7 @@ public class NodeController {
                         node = nodeService.selectNodeByNodename(jsonObject.getString("preNodeName"));
                         node.setOperatorName(jsonObject.getString("operatorName"));
                         node.setNodeName(jsonObject.getString("newNodeName"));
+                        node.setNodeArea(jsonObject.getString("nodeArea"));
                         nodeService.updateNode(node);
                         returnMessage.setStatus(0);
                         returnMessage.setMessage("success");
