@@ -257,7 +257,7 @@ public class cacheDelete {
     @annotation.UserLoginToken
     @CrossOrigin
     @PostMapping(value = "/cacheSelect",produces = {"text/html;charset=UTF-8"})
-    public String cacheSelect(@RequestBody(required = false) String requesyBody) throws IOException {
+    public String cacheSelect(@RequestBody(required = false) String requesyBody) {
         JSONObject jsonObject = new JSONObject(requesyBody);
         String startTime = jsonObject.getString("startTime");
         String endTime = jsonObject.getString("endTime");

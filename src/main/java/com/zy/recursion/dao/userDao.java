@@ -11,6 +11,6 @@ public interface userDao {
     List<user> selectUserForId(user userEntity);
     void addUser(user userEntity);
     void updateUser(user userEnity);
-    void deleteUser(user userEnity);;
+    void deleteUser(user userEnity);
     List<user> selectAllUser();
 }
