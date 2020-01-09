@@ -149,19 +149,23 @@ public class http {
 
     @annotation.UserLoginToken
     @CrossOrigin
-    @PostMapping(value = "/handleResolve")
-    public returnMessage handleResolve(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException, URISyntaxException {
+    @PostMapping(value = "/handleResolve",produces = "text/plain;charset=UTF-8")
+    public String handleResolve(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException, URISyntaxException {
         JSONObject jsonObject = new JSONObject(requestBody);
         //String prefixType = jsonObject.getString("prefixType");
         String ip =jsonObject.getString("ip");
         String prefix = jsonObject.getString("prefix");
         boolean isSingular = false;
-        if (jsonObject.has("flag")){
+        if (jsonObject.has("flag"))
+        {
              isSingular = true;
         }
-        String prefixType=" ";
+        JSONObject json = new JSONObject();
+        returnMessage returnMessage;
+        String prefixType = " ";
         String  handlepattern1="20.500.";
-        String  Gsqpattern="^[+]{0,1}(\\d+)$";
+        //String  Gsqpattern="^[+]{0,1}(\\d+)$";
+        String  Gsqpattern= "^\\d{5,}$";
         String  Dnspattern="[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\\.?";
         String niotpantter = "cn.pub.xty.100";
         String ecodepantter = "100036930100";
@@ -176,37 +180,72 @@ public class http {
         {
             prefixType="Handle";
         }
-        if(Pattern.matches(Gsqpattern, prefix) || prefix.startsWith(niotpantter)||prefix.startsWith(ecodepantter)||prefix.startsWith(oidpanntter))
+        if(Pattern.matches(Gsqpattern, prefix))
         {
             prefixType="GS1";
         }
-
-        String  handlepattern[] = new String[]{"10", "11", "20", "21", "22", "25", "27", "77", "44", "86","0.NA"};
-        if  (prefixType.equals("DNS"))
+        if(prefix.startsWith(ecodepantter) )
         {
-            for (String str : handlepattern) {
-                if (prefix.startsWith(str)) {
-                    if (ip != null) {
-                        if (httpPost.testSendGetDataByJson(jsonObject).getMessage().startsWith("{\"handle"))
-                        {
-                            break;
-                        }else {
-                            return httpPost.testSendGetDataByJson(jsonObject);
-                        }
+            prefixType="Ecode";
+        }
 
-                    } else {
-                        return null;
-                    }
-
-                }
-            }
+        if(prefix.startsWith(oidpanntter) )
+        {
+            prefixType="Oid";
         }
 
 
+        String  handlepattern[] = new String[]{"10", "11", "20", "21", "22", "25", "27", "77", "44", "86","0.NA"};
+       if  (prefixType.equals("DNS")||prefixType.equals(" "))
+        {
+        for (String str : handlepattern) {
+            if (prefix.startsWith(str)) {
+                if (ip != null) {
+                    jsonObject.put("prefixType","Handle");
+                    returnMessage=httpPost.testSendGetDataByJson(jsonObject);
+                    if (returnMessage.getStatus()==1)
+                    {
+                        break;
+                    }else if(returnMessage.getMessage().startsWith("{\"handle")){
+                        break;
+
+                    }
+                    else {
+                        json.put("status",returnMessage.getStatus());
+                        json.put("message",returnMessage.getMessage());
+                        json.put("type","Handle");
+                        return json.toString();
+                    }
+                }
+            }
+        }
+       }
+        if(prefixType.equals(" "))
+        {
+            json.put("status",1);
+            json.put("message","未能查询到相应结果");
+            json.put("type","未知");
+            return json.toString();
+        }
+
+        jsonObject.put("prefixType",prefixType);
 
         if (prefixType.equals("Handle")){
             if (ip != null){
-                return httpPost.testSendGetDataByJson(jsonObject);
+                returnMessage=httpPost.testSendGetDataByJson(jsonObject);
+                if(returnMessage.getMessage().endsWith(":100}")||returnMessage.getMessage().endsWith("responseCode\":3}"))
+                {
+                    json.put("status", 1);
+                    json.put("message", "未查询到此条handle");
+                    json.put("type", prefixType);
+                    return json.toString();
+                }else {
+                    json.put("status", returnMessage.getStatus());
+                    json.put("message", returnMessage.getMessage());
+                    json.put("type", prefixType);
+                    return json.toString();
+                }
+                //return httpPost.testSendGetDataByJson(jsonObject);
             }else{
                 return null;
             }
@@ -216,7 +255,12 @@ public class http {
                 if (isSingular){
                     ip = "8.8.8.8";
                 }
-                return new ConnectLinuxCommand().dns(device,ip,prefix);
+                returnMessage= new ConnectLinuxCommand().dns(device,ip,prefix);
+                json.put("status",returnMessage.getStatus());
+                json.put("message",returnMessage.getMessage());
+                json.put("type",prefixType);
+                return json.toString();
+
             }else{
                 return null;
             }
@@ -226,11 +270,19 @@ public class http {
                 if (isSingular){
                     ip = "8.8.8.8";
                 }
-                return new ConnectLinuxCommand().oid(device,ip,prefix);
+                returnMessage= new ConnectLinuxCommand().oid(device,ip,prefix);
+                json.put("status",returnMessage.getStatus());
+                json.put("message",returnMessage.getMessage());
+                json.put("type",prefixType);
+                return json.toString();
+
             }else{
                 return null;
             }
         }
-        return null;
+        json.put("status",1);
+        json.put("message","未能查询到相应结果");
+        json.put("type","未知");
+        return json.toString();
     }
 }
