@@ -18,6 +18,7 @@ import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import com.zy.recursion.util.httpPost;
 import javax.servlet.http.HttpServletResponse;
@@ -151,13 +152,58 @@ public class http {
     @PostMapping(value = "/handleResolve")
     public returnMessage handleResolve(HttpServletResponse response, @RequestBody(required = false) String requestBody) throws IOException, URISyntaxException {
         JSONObject jsonObject = new JSONObject(requestBody);
-        String prefixType = jsonObject.getString("prefixType");
+        //String prefixType = jsonObject.getString("prefixType");
         String ip =jsonObject.getString("ip");
         String prefix = jsonObject.getString("prefix");
         boolean isSingular = false;
         if (jsonObject.has("flag")){
              isSingular = true;
         }
+        String prefixType=" ";
+        String  handlepattern1="20.500.";
+        String  Gsqpattern="^[+]{0,1}(\\d+)$";
+        String  Dnspattern="[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\\.?";
+        String niotpantter = "cn.pub.xty.100";
+        String ecodepantter = "100036930100";
+        String oidpanntter = "1.2.156.86";
+
+
+        if (Pattern.matches(Dnspattern, prefix))
+        {
+            prefixType="DNS";
+        }
+        if (prefix.startsWith(handlepattern1))
+        {
+            prefixType="Handle";
+        }
+        if(Pattern.matches(Gsqpattern, prefix) || prefix.startsWith(niotpantter)||prefix.startsWith(ecodepantter)||prefix.startsWith(oidpanntter))
+        {
+            prefixType="GS1";
+        }
+
+        String  handlepattern[] = new String[]{"10", "11", "20", "21", "22", "25", "27", "77", "44", "86","0.NA"};
+        if  (prefixType.equals("DNS"))
+        {
+            for (String str : handlepattern) {
+                if (prefix.startsWith(str)) {
+                    if (ip != null) {
+                        if (httpPost.testSendGetDataByJson(jsonObject).getMessage().startsWith("{\"handle"))
+                        {
+                            break;
+                        }else {
+                            return httpPost.testSendGetDataByJson(jsonObject);
+                        }
+
+                    } else {
+                        return null;
+                    }
+
+                }
+            }
+        }
+
+
+
         if (prefixType.equals("Handle")){
             if (ip != null){
                 return httpPost.testSendGetDataByJson(jsonObject);
